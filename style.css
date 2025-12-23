@@ -1,4 +1,3 @@
-/* --- Base Styles & Reset --- */
 * {
   margin: 0;
   padding: 0;
@@ -10,7 +9,6 @@ body {
   background-color: #f5f7fa;
   color: #333;
   padding: 20px;
-  line-height: 1.6;
 }
 
 .container {
@@ -18,7 +16,6 @@ body {
   margin: 0 auto;
 }
 
-/* --- Header Section --- */
 header {
   text-align: center;
   margin-bottom: 30px;
@@ -26,35 +23,21 @@ header {
   background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
   color: white;
   border-radius: 10px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
-h1 {
-  font-size: 2.5rem;
-  margin-bottom: 10px;
-}
-
-.subtitle {
-  font-size: 1.1rem;
-  opacity: 0.9;
-}
-
-/* --- Layout Structure --- */
 .main-content {
   display: flex;
   flex-wrap: wrap;
   gap: 30px;
-  margin-bottom: 30px;
 }
 
 .controls-panel {
   flex: 1;
   min-width: 320px;
-  background-color: white;
+  background: white;
   padding: 25px;
   border-radius: 10px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-  /* Enable flex for ordering */
   display: flex;
   flex-direction: column;
 }
@@ -62,21 +45,17 @@ h1 {
 .graph-container {
   flex: 2;
   min-width: 600px;
-  background-color: white;
+  background: white;
   border-radius: 10px;
   padding: 20px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-  display: flex;
-  flex-direction: column;
 }
 
-/* --- Canvas Wrapper --- */
 .canvas-wrapper {
   width: 100%;
   height: 600px;
   overflow: auto;
   border: 1px solid #e1e5eb;
-  border-radius: 5px;
   background-color: #f9f9f9;
   position: relative;
   cursor: crosshair;
@@ -87,96 +66,66 @@ h1 {
   background-color: white;
 }
 
-/* --- Control Group Formatting --- */
 .control-group {
   margin-bottom: 25px;
 }
 
-/* Default Visual Order */
-.control-group:nth-of-type(1) {
-  order: 1;
-} /* Dimensions */
-.control-group:nth-of-type(2) {
-  order: 2;
-} /* Grid Settings */
-.control-group:nth-of-type(3) {
-  order: 3;
-} /* Image Auto-Fill */
-.control-group:nth-of-type(4) {
-  order: 4;
-} /* Draw Tools */
-
 h2 {
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   margin-bottom: 15px;
   color: #2c3e50;
-  padding-bottom: 8px;
   border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 5px;
 }
 
 .control-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 }
 
 label {
   font-weight: 600;
-  color: #444;
   flex: 1;
+  font-size: 0.9rem;
 }
 
 input[type="range"] {
   flex: 2;
-  margin: 0 15px;
-}
-
-input[type="number"],
-input[type="color"],
-select {
-  width: 100px;
-  padding: 8px 10px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 1rem;
+  margin: 0 10px;
 }
 
 .value-display {
   font-weight: 600;
   color: #2575fc;
-  min-width: 40px;
+  min-width: 35px;
 }
 
-/* --- Info & Tools --- */
 .superbox-info {
-  order: 5;
   background-color: #f0f7ff;
   padding: 15px;
   border-radius: 8px;
-  margin-top: 10px;
   border-left: 4px solid #2575fc;
+  margin-bottom: 20px;
 }
 
 .buttons {
-  order: 6;
   display: flex;
-  gap: 15px;
-  margin-top: 20px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
 .color-palette {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
-  margin-top: 10px;
 }
 
 .color-option {
-  width: 30px;
-  height: 30px;
-  border-radius: 5px;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
   cursor: pointer;
   border: 2px solid transparent;
 }
@@ -186,10 +135,9 @@ select {
   transform: scale(1.1);
 }
 
-/* --- Buttons & UI Elements --- */
 button,
 .upload-label {
-  padding: 12px 20px;
+  padding: 10px;
   border: none;
   border-radius: 5px;
   font-weight: 600;
@@ -197,111 +145,57 @@ button,
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  transition: all 0.3s ease;
-  flex: 1;
-  min-width: 140px;
+  gap: 5px;
+  font-size: 0.85rem;
 }
 
 .download-btn {
-  background-color: #2575fc;
+  background: #2575fc;
+  color: white;
+}
+.clear-drawing-btn {
+  background: #c50000;
   color: white;
 }
 .reset-btn {
-  background-color: #f8f9fa;
-  color: #333;
+  background: #f8f9fa;
   border: 1px solid #ddd;
 }
 .draw-btn {
-  background-color: #28a745;
+  background: #28a745;
   color: white;
 }
 .erase-btn {
-  background-color: #ffc107;
-  color: #333;
-}
-.clear-drawing-btn {
-  background-color: #c50000;
-  color: white;
-}
-.upload-label {
-  background-color: #ffffff;
-  border: 1px solid #ddd;
-  color: #333;
-}
-
-button:hover,
-.upload-label:hover {
-  transform: translateY(-2px);
-  opacity: 0.9;
+  background: #ffc107;
 }
 
 .canvas-controls {
   display: flex;
   justify-content: space-between;
-  width: 100%;
-  margin-top: 20px;
+  margin-top: 15px;
   padding: 15px;
-  background-color: #f8f9fa;
+  background: #f8f9fa;
   border-radius: 8px;
-  flex-wrap: wrap;
-  gap: 15px;
-}
-
-.drawing-tools {
-  display: flex;
-  gap: 15px;
-  align-items: center;
-}
-
-.tool-indicator {
-  padding: 8px 15px;
-  background-color: #e9ecef;
-  border-radius: 5px;
-  font-weight: 600;
-  border: 2px solid transparent;
-}
-
-.tool-indicator.active {
-  border-color: #2575fc;
-  background-color: #e3f2fd;
 }
 
 .mouse-position {
   position: absolute;
   top: 10px;
   right: 10px;
-  background-color: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.7);
   color: white;
-  padding: 5px 10px;
-  border-radius: 5px;
-  font-size: 0.85rem;
-  pointer-events: none;
-  z-index: 10;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  z-index: 5;
 }
 
-/* --- Responsive Media Query --- */
 @media (max-width: 1000px) {
   .main-content {
     flex-direction: column;
-    align-items: center;
   }
-
-  /* Constraint: Grid box goes down to Draw Tools (which is order 4) */
-  .control-group:nth-of-type(2) {
-    order: 4.5; /* This pushes Grid Settings below Draw Tools */
-  }
-
-  /* Constraint: Set min-width 310px and max 880px */
   .graph-container,
   .controls-panel {
-    min-width: 310px;
-    max-width: 880px;
-    width: 100%;
-    margin: 0 auto;
-  }
-
-  .canvas-wrapper {
-    height: 450px; /* Adjusted for mobile view */
+    max-width: 100%;
   }
 }

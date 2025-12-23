@@ -7,9 +7,10 @@ let settings = {
   height: 800,
   gridSize: 20,
   gridColor: "#cccccc",
+  superboxBorderColor: "#555555", // NEW FEATURE
   backgroundColor: "#ffffff",
   superboxColor: "#e6f7ff",
-  drawColor: "#ff0000", // Default Red
+  drawColor: "#ff0000",
   drawOpacity: 1,
 };
 
@@ -17,12 +18,11 @@ let isDrawing = false;
 let isErasing = false;
 let coloredBoxes = new Map();
 
-// Color Palette with Red and Navy
 const colors = [
-  "#ff0000", // Red
+  "#ff0000",
   "#4ecdc4",
   "#45b7d1",
-  "#000080", // Navy Blue
+  "#000080",
   "#feca57",
   "#ff9ff3",
   "#54a0ff",
@@ -55,7 +55,6 @@ function initPalette() {
 }
 
 function setupListeners() {
-  // Dimension Inputs
   document.getElementById("width").oninput = (e) => {
     settings.width = +e.target.value;
     updateUI();
@@ -76,13 +75,14 @@ function setupListeners() {
     settings.gridColor = e.target.value;
     drawGraph();
   };
+  document.getElementById("superboxBorderColor").oninput = (e) => {
+    settings.superboxBorderColor = e.target.value;
+    drawGraph();
+  };
 
-  // Image Upload
   document.getElementById("imageUpload").onchange = (e) => {
     if (e.target.files[0]) processImage(e.target.files[0]);
   };
-
-  // Mode Buttons
   document.getElementById("drawModeBtn").onclick = () => {
     isErasing = false;
     updateToolUI();
@@ -98,7 +98,6 @@ function setupListeners() {
   document.getElementById("downloadBtn").onclick = download;
   document.getElementById("resetBtn").onclick = () => location.reload();
 
-  // Mouse Events
   canvas.onmousedown = (e) => {
     isDrawing = true;
     handleDraw(e);
@@ -109,7 +108,6 @@ function setupListeners() {
   };
   window.onmouseup = () => (isDrawing = false);
 
-  // Zoom
   document.getElementById("zoomLevel").onchange = (e) => {
     const zoom = e.target.value;
     canvas.style.width = canvas.width * zoom + "px";
@@ -126,22 +124,21 @@ function processImage(file) {
       const tempCtx = tempCanvas.getContext("2d");
       const cols = Math.floor(settings.width / settings.gridSize);
       const rows = Math.floor(settings.height / settings.gridSize);
-
       tempCanvas.width = cols;
       tempCanvas.height = rows;
       tempCtx.drawImage(img, 0, 0, cols, rows);
-
       const data = tempCtx.getImageData(0, 0, cols, rows).data;
       coloredBoxes.clear();
-
       for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
           const i = (y * cols + x) * 4;
           if (data[i + 3] > 10) {
-            const rgba = `rgba(${data[i]}, ${data[i + 1]}, ${data[i + 2]}, ${
-              settings.drawOpacity
-            })`;
-            coloredBoxes.set(`${x},${y}`, rgba);
+            coloredBoxes.set(
+              `${x},${y}`,
+              `rgba(${data[i]}, ${data[i + 1]}, ${data[i + 2]}, ${
+                settings.drawOpacity
+              })`
+            );
           }
         }
       }
@@ -157,7 +154,6 @@ function handleDraw(e) {
   const zoom = parseFloat(document.getElementById("zoomLevel").value);
   const x = Math.floor((e.clientX - rect.left) / zoom / settings.gridSize);
   const y = Math.floor((e.clientY - rect.top) / zoom / settings.gridSize);
-
   if (
     x < 0 ||
     y < 0 ||
@@ -184,7 +180,6 @@ function updateUI() {
     Math.floor(settings.width / settings.gridSize) * settings.gridSize;
   const snappedHeight =
     Math.floor(settings.height / settings.gridSize) * settings.gridSize;
-
   canvas.width = snappedWidth;
   canvas.height = snappedHeight;
 
@@ -207,11 +202,9 @@ function updateUI() {
     Math.floor(snappedHeight / settings.gridSize)
   }`;
 
-  // Sync zoom style with internal dimensions
   const zoom = document.getElementById("zoomLevel").value;
   canvas.style.width = snappedWidth * zoom + "px";
   canvas.style.height = snappedHeight * zoom + "px";
-
   drawGraph();
 }
 
@@ -219,7 +212,7 @@ function drawGraph() {
   ctx.fillStyle = settings.backgroundColor;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Superboxes (10x10 grid clusters)
+  // 1. Shaded Superbox backgrounds
   const sz = settings.gridSize * 10;
   for (let i = 0; i < canvas.width; i += sz) {
     for (let j = 0; j < canvas.height; j += sz) {
@@ -230,7 +223,7 @@ function drawGraph() {
     }
   }
 
-  // Drawing
+  // 2. User Drawings
   coloredBoxes.forEach((color, key) => {
     const [x, y] = key.split(",").map(Number);
     ctx.fillStyle = color;
@@ -242,7 +235,7 @@ function drawGraph() {
     );
   });
 
-  // Grid Lines
+  // 3. Regular Grid Lines
   ctx.strokeStyle = settings.gridColor;
   ctx.lineWidth = 1;
   ctx.beginPath();
@@ -251,6 +244,20 @@ function drawGraph() {
     ctx.lineTo(x, canvas.height);
   }
   for (let y = 0; y <= canvas.height; y += settings.gridSize) {
+    ctx.moveTo(0, y);
+    ctx.lineTo(canvas.width, y);
+  }
+  ctx.stroke();
+
+  // 4. Superbox Outlines (Every 10 grids)
+  ctx.strokeStyle = settings.superboxBorderColor;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (let x = 0; x <= canvas.width; x += sz) {
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, canvas.height);
+  }
+  for (let y = 0; y <= canvas.height; y += sz) {
     ctx.moveTo(0, y);
     ctx.lineTo(canvas.width, y);
   }

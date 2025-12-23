@@ -138,8 +138,8 @@ input[type="range"] {
 button,
 .upload-label {
   padding: 10px;
-  border: none;
   border-radius: 5px;
+  border-color: darkturquoise;
   font-weight: 600;
   cursor: pointer;
   display: flex;
@@ -147,6 +147,17 @@ button,
   justify-content: center;
   gap: 5px;
   font-size: 0.85rem;
+}
+.image-upload {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  border-radius: 10px;
+  border: 5px solid darkturquoise;
+  height: 60px;
+  color: #4745d8;
+  font-weight: 700;
 }
 
 .download-btn {
@@ -176,6 +187,38 @@ button,
   padding: 15px;
   background: #f8f9fa;
   border-radius: 8px;
+}
+.drawing-tools {
+  display: flex; /* This puts children in a row */
+  align-items: center; /* Vertically aligns buttons and text */
+  gap: 10px; /* Adds space between the buttons and text */
+}
+
+/* Optional: Styling for the buttons to match your image */
+.draw-btn,
+.erase-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 15px;
+  border-radius: 5px;
+  border: 2px solid darkturquoise;
+  cursor: pointer;
+  font-weight: bold;
+  color: white;
+}
+
+.draw-btn {
+  background-color: #28a745;
+}
+.erase-btn {
+  background-color: #ffc107;
+  color: black;
+}
+
+.tool-indicator {
+  font-size: 14px;
+  margin-left: 5px;
 }
 
 .mouse-position {

@@ -13,7 +13,7 @@
   --bg: #1a1625;
   --surface: #231f35;
   --surface2: #2e2845;
-  --surface3: #3a3358;
+  --surface3: #3b345b;
   --accent: #e0629e;
   --accent2: #f5a623;
   --text: #f0eaf7;
@@ -21,7 +21,7 @@
   --border: rgba(255, 255, 255, 0.08);
   --radius: 8px;
   --radius-sm: 5px;
-  --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.711);
 }
 
 body {

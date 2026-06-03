@@ -3,82 +3,249 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Customizable Graph Sheet Generator</title>
+    <title>Saree & Stall Design Studio</title>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <div class="container">
-      <header>
-        <h1><i class="fas fa-chart-area"></i> Graph Sheet Generator</h1>
-        <p class="subtitle">Design graph paper & Auto-fill from images!</p>
-      </header>
+    <div class="app-shell">
+      <!-- SIDEBAR -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <div class="brand">
+            <span class="brand-icon"><i class="fas fa-palette"></i></span>
+            <div>
+              <h1>Design Studio</h1>
+              <p>Saree &amp; Stall Creator</p>
+            </div>
+          </div>
+        </div>
 
-      <div class="main-content">
-        <div class="controls-panel">
-          <div class="control-group">
-            <h2><i class="fas fa-expand-alt"></i> Dimensions</h2>
-            <div class="control-row">
-              <label>Width (px):</label>
+        <div class="sidebar-body">
+          <!-- TEMPLATE PICKER -->
+          <section class="panel">
+            <div class="panel-title">
+              <i class="fas fa-th-large"></i> Templates
+            </div>
+            <div class="template-grid" id="templateGrid">
+              <div
+                class="tmpl-card active"
+                data-template="saree"
+                title="Classic Saree"
+              >
+                <div class="tmpl-preview saree-preview"></div>
+                <span>Saree</span>
+              </div>
+              <div
+                class="tmpl-card"
+                data-template="stall"
+                title="Stall / Fabric"
+              >
+                <div class="tmpl-preview stall-preview"></div>
+                <span>Stall</span>
+              </div>
+              <div
+                class="tmpl-card"
+                data-template="border"
+                title="Border Pattern"
+              >
+                <div class="tmpl-preview border-preview"></div>
+                <span>Border</span>
+              </div>
+              <div class="tmpl-card" data-template="motif" title="Motif Design">
+                <div class="tmpl-preview motif-preview"></div>
+                <span>Motif</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- CANVAS SIZE -->
+          <section class="panel">
+            <div class="panel-title">
+              <i class="fas fa-expand-alt"></i> Canvas
+            </div>
+            <div class="ctrl-row">
+              <label>Width</label>
               <input
                 type="range"
                 id="width"
                 min="400"
-                max="2000"
+                max="2400"
                 value="1200"
                 step="10"
               />
-              <span id="widthValue" class="value-display">1200</span>
+              <span class="val" id="widthValue">1200</span>
             </div>
-            <div class="control-row">
-              <label>Height (px):</label>
+            <div class="ctrl-row">
+              <label>Height</label>
               <input
                 type="range"
                 id="height"
                 min="400"
-                max="2000"
-                value="1200"
+                max="2400"
+                value="800"
                 step="10"
               />
-              <span id="heightValue" class="value-display">1200</span>
+              <span class="val" id="heightValue">800</span>
             </div>
-          </div>
-
-          <div class="control-group">
-            <h2><i class="fas fa-th"></i> Grid Settings</h2>
-            <div class="control-row">
-              <label>Grid Size (px):</label>
+            <div class="ctrl-row">
+              <label>Cell px</label>
               <input
                 type="range"
                 id="gridSize"
                 min="5"
-                max="50"
+                max="60"
                 value="20"
                 step="1"
               />
-              <span id="gridSizeValue" class="value-display">20</span>
+              <span class="val" id="gridSizeValue">20</span>
             </div>
-            <div class="control-row">
-              <label>Grid Color:</label>
-              <input type="color" id="gridColor" value="#cccccc" />
-            </div>
-            <div class="control-row">
-              <label>Superbox Border:</label>
-              <input type="color" id="superboxBorderColor" value="#555555" />
-            </div>
-          </div>
+          </section>
 
-          <div class="control-group">
-            <h2><i class="fas fa-image"></i> Image Auto-Fill</h2>
-            <p style="font-size: 0.85rem; color: #666; margin-bottom: 10px">
-              Upload an image to automatically arrange colors on the grid.
-            </p>
+          <!-- PATTERN TOOLS -->
+          <section class="panel">
+            <div class="panel-title">
+              <i class="fas fa-magic"></i> Pattern Fill
+            </div>
+            <div class="pattern-btns" id="patternBtns">
+              <button class="pat-btn" data-pattern="none" title="No pattern">
+                <i class="fas fa-ban"></i><span>None</span>
+              </button>
+              <button
+                class="pat-btn"
+                data-pattern="checkerboard"
+                title="Checkerboard"
+              >
+                <i class="fas fa-chess-board"></i><span>Check</span>
+              </button>
+              <button
+                class="pat-btn"
+                data-pattern="diagonal"
+                title="Diagonal stripes"
+              >
+                <i class="fas fa-grip-lines-vertical"></i><span>Diag</span>
+              </button>
+              <button class="pat-btn" data-pattern="diamond" title="Diamond">
+                <i class="fas fa-gem"></i><span>Diamond</span>
+              </button>
+              <button class="pat-btn" data-pattern="wave" title="Wave">
+                <i class="fas fa-water"></i><span>Wave</span>
+              </button>
+              <button class="pat-btn" data-pattern="floral" title="Floral">
+                <i class="fas fa-seedling"></i><span>Floral</span>
+              </button>
+              <button class="pat-btn" data-pattern="zigzag" title="Zigzag">
+                <i class="fas fa-bolt"></i><span>Zigzag</span>
+              </button>
+              <button class="pat-btn" data-pattern="dots" title="Dots">
+                <i class="fas fa-circle"></i><span>Dots</span>
+              </button>
+            </div>
+            <div class="ctrl-row" style="margin-top: 10px">
+              <label>Color A</label>
+              <input type="color" id="patColorA" value="#c0392b" />
+            </div>
+            <div class="ctrl-row">
+              <label>Color B</label>
+              <input type="color" id="patColorB" value="#f39c12" />
+            </div>
+            <div class="ctrl-row">
+              <label>Scale</label>
+              <input
+                type="range"
+                id="patScale"
+                min="1"
+                max="6"
+                value="2"
+                step="1"
+              />
+              <span class="val" id="patScaleVal">2</span>
+            </div>
+            <button class="action-btn secondary" id="applyPatternBtn">
+              <i class="fas fa-fill-drip"></i> Apply to Region
+            </button>
+            <button class="action-btn secondary" id="fillAllBtn">
+              <i class="fas fa-paint-bucket"></i> Fill Entire Canvas
+            </button>
+          </section>
 
-            <label for="imageUpload" class="image-upload">
-              <i class="fas fa-upload"></i> Upload Photo
+          <!-- SYMMETRY -->
+          <section class="panel">
+            <div class="panel-title">
+              <i class="fas fa-infinity"></i> Symmetry
+            </div>
+            <div class="sym-btns" id="symBtns">
+              <button class="sym-btn active" data-sym="none">Off</button>
+              <button class="sym-btn" data-sym="h">↔ H</button>
+              <button class="sym-btn" data-sym="v">↕ V</button>
+              <button class="sym-btn" data-sym="hv">✛ Both</button>
+              <button class="sym-btn" data-sym="quad">4x</button>
+            </div>
+          </section>
+
+          <!-- COLORS -->
+          <section class="panel">
+            <div class="panel-title">
+              <i class="fas fa-swatchbook"></i> Color Palette
+            </div>
+            <div class="palettes-tabs">
+              <button class="ptab active" data-tab="saree">Saree</button>
+              <button class="ptab" data-tab="stall">Stall</button>
+              <button class="ptab" data-tab="custom">Custom</button>
+            </div>
+            <div class="palette-wrap" id="paletteWrap"></div>
+            <div class="ctrl-row" id="customColorRow" style="display: none">
+              <label>Pick</label>
+              <input type="color" id="customColorPick" value="#9b59b6" />
+              <button class="action-btn mini" id="addCustomColor">
+                <i class="fas fa-plus"></i>
+              </button>
+            </div>
+            <div class="ctrl-row">
+              <label>Opacity</label>
+              <input
+                type="range"
+                id="drawOpacity"
+                min="0.1"
+                max="1"
+                value="1"
+                step="0.05"
+              />
+              <span class="val" id="drawOpacityValue">1.0</span>
+            </div>
+          </section>
+
+          <!-- LAYERS -->
+          <section class="panel">
+            <div class="panel-title">
+              <i class="fas fa-layer-group"></i> Layers
+            </div>
+            <div class="layers-list" id="layersList"></div>
+            <div class="layer-btns">
+              <button class="action-btn mini" id="addLayerBtn">
+                <i class="fas fa-plus"></i> Add
+              </button>
+              <button class="action-btn mini" id="mergeLayersBtn">
+                <i class="fas fa-compress-alt"></i> Merge
+              </button>
+            </div>
+          </section>
+
+          <!-- IMAGE AUTO-FILL -->
+          <section class="panel">
+            <div class="panel-title">
+              <i class="fas fa-image"></i> Image Auto-Fill
+            </div>
+            <label class="upload-area" for="imageUpload">
+              <i class="fas fa-cloud-upload-alt"></i>
+              <span>Drop or click to upload</span>
               <input
                 type="file"
                 id="imageUpload"
@@ -86,77 +253,210 @@
                 style="display: none"
               />
             </label>
-          </div>
-
-          <div class="control-group">
-            <h2><i class="fas fa-draw-polygon"></i> Draw Tools</h2>
-            <div class="control-row">
-              <label>Opacity:</label>
-              <input
-                type="range"
-                id="drawOpacity"
-                min="0.1"
-                max="1"
-                value="1.0"
-                step="0.05"
-              />
-              <span id="drawOpacityValue" class="value-display">1.0</span>
-            </div>
-            <div class="color-palette" id="palette"></div>
-          </div>
-
-          <div class="superbox-info">
-            <p id="superboxCount">Superboxes: 60</p>
-            <p id="boxCount">Total boxes: 6000</p>
-            <p id="coloredBoxes">Colored boxes: 0</p>
-          </div>
-
-          <div class="buttons">
-            <button class="download-btn" id="downloadBtn">
-              <i class="fas fa-download"></i> Download PNG
-            </button>
-            <button class="clear-drawing-btn" id="clearDrawingBtn">
-              <i class="fas fa-eraser"></i> Clear All
-            </button>
-            <button class="reset-btn" id="resetBtn">
-              <i class="fas fa-redo"></i> Reset Sheet
-            </button>
-          </div>
-        </div>
-
-        <div class="graph-container">
-          <div class="canvas-wrapper" id="canvasWrapper">
-            <div class="mouse-position" id="mousePosition">Grid: 0, 0</div>
-            <canvas id="graphCanvas" width="1200" height="800"></canvas>
-          </div>
-
-          <div class="canvas-controls">
-            <div class="drawing-tools">
-              <button class="draw-btn" id="drawModeBtn">
-                <i class="fas fa-pen"></i> Draw
-              </button>
-              <button class="erase-btn" id="eraseModeBtn">
-                <i class="fas fa-eraser"></i> Erase
-              </button>
-              <div class="tool-indicator active" id="toolIndicator">
-                Drawing
-              </div>
-            </div>
-            <div>
-              <strong>Zoom:</strong>
-              <select id="zoomLevel">
-                <option value="0.1">10%</option>
-                <option value="0.25">25%</option>
-                <option value="0.5">50%</option>
-                <option value="0.8">80%</option>
-                <option value="1" selected>100%</option>
-                <option value="1.5">150%</option>
+            <div class="ctrl-row" style="margin-top: 8px">
+              <label>Dither</label>
+              <select id="ditherMode">
+                <option value="none">None</option>
+                <option value="palette">Palette snap</option>
+                <option value="bayer">Bayer</option>
               </select>
             </div>
+            <div class="ctrl-row">
+              <label>Colors</label>
+              <input
+                type="range"
+                id="maxColors"
+                min="2"
+                max="32"
+                value="16"
+                step="1"
+              />
+              <span class="val" id="maxColorsVal">16</span>
+            </div>
+          </section>
+
+          <!-- GRID LOOK -->
+          <section class="panel">
+            <div class="panel-title">
+              <i class="fas fa-th"></i> Grid &amp; Zones
+            </div>
+            <div class="ctrl-row">
+              <label>Grid color</label>
+              <input type="color" id="gridColor" value="#cccccc" />
+            </div>
+            <div class="ctrl-row">
+              <label>Block border</label>
+              <input type="color" id="superboxBorderColor" value="#555555" />
+            </div>
+            <div class="ctrl-row">
+              <label>Background</label>
+              <input type="color" id="bgColor" value="#ffffff" />
+            </div>
+            <div class="ctrl-row">
+              <label>Show grid</label>
+              <input type="checkbox" id="showGrid" checked />
+            </div>
+            <div class="ctrl-row">
+              <label>Zone labels</label>
+              <input type="checkbox" id="showZoneLabels" checked />
+            </div>
+          </section>
+
+          <!-- ZONES / SAREE ZONES -->
+          <section class="panel">
+            <div class="panel-title">
+              <i class="fas fa-cut"></i> Design Zones
+            </div>
+            <p class="hint">Click a zone button then paint only that area.</p>
+            <div class="zone-btns" id="zoneBtns">
+              <button class="zone-btn active" data-zone="all">All</button>
+              <button class="zone-btn" data-zone="pallu">Pallu</button>
+              <button class="zone-btn" data-zone="body">Body</button>
+              <button class="zone-btn" data-zone="border">Border</button>
+            </div>
+          </section>
+
+          <!-- STATS -->
+          <section class="panel stats-panel">
+            <div class="stat">
+              <span id="coloredBoxes">0</span><label>Colored</label>
+            </div>
+            <div class="stat">
+              <span id="boxCount">0</span><label>Total</label>
+            </div>
+            <div class="stat">
+              <span id="layerCount">1</span><label>Layers</label>
+            </div>
+          </section>
+        </div>
+        <!-- sidebar-body -->
+
+        <!-- SIDEBAR ACTIONS -->
+        <div class="sidebar-footer">
+          <button class="action-btn primary full" id="downloadBtn">
+            <i class="fas fa-download"></i> Download PNG
+          </button>
+          <div class="footer-row">
+            <button class="action-btn secondary" id="exportSvgBtn">
+              <i class="fas fa-file-code"></i> SVG
+            </button>
+            <button class="action-btn secondary" id="undoBtn" title="Undo">
+              <i class="fas fa-undo"></i>
+            </button>
+            <button class="action-btn secondary" id="redoBtn" title="Redo">
+              <i class="fas fa-redo"></i>
+            </button>
+            <button class="action-btn danger" id="clearDrawingBtn">
+              <i class="fas fa-trash-alt"></i>
+            </button>
           </div>
         </div>
-      </div>
+      </aside>
+
+      <!-- MAIN CANVAS AREA -->
+      <main class="canvas-area">
+        <div class="toolbar">
+          <div class="tool-group" id="toolGroup">
+            <button
+              class="tool-btn active"
+              id="drawModeBtn"
+              data-tool="draw"
+              title="Draw (D)"
+            >
+              <i class="fas fa-pen"></i>
+            </button>
+            <button
+              class="tool-btn"
+              id="eraseModeBtn"
+              data-tool="erase"
+              title="Erase (E)"
+            >
+              <i class="fas fa-eraser"></i>
+            </button>
+            <button
+              class="tool-btn"
+              id="fillModeBtn"
+              data-tool="fill"
+              title="Flood Fill (F)"
+            >
+              <i class="fas fa-fill-drip"></i>
+            </button>
+            <button
+              class="tool-btn"
+              id="eyedropperBtn"
+              data-tool="eyedropper"
+              title="Eyedropper (I)"
+            >
+              <i class="fas fa-eye-dropper"></i>
+            </button>
+            <button
+              class="tool-btn"
+              id="selectModeBtn"
+              data-tool="select"
+              title="Select Region (S)"
+            >
+              <i class="fas fa-vector-square"></i>
+            </button>
+            <button
+              class="tool-btn"
+              id="lineModeBtn"
+              data-tool="line"
+              title="Line (L)"
+            >
+              <i class="fas fa-minus"></i>
+            </button>
+            <button
+              class="tool-btn"
+              id="rectModeBtn"
+              data-tool="rect"
+              title="Rectangle (R)"
+            >
+              <i class="fas fa-square"></i>
+            </button>
+          </div>
+          <div class="brush-group">
+            <label>Brush</label>
+            <select id="brushSize">
+              <option value="1">1×1</option>
+              <option value="2">2×2</option>
+              <option value="3" selected>3×3</option>
+              <option value="5">5×5</option>
+              <option value="7">7×7</option>
+            </select>
+          </div>
+          <div class="zoom-group">
+            <label>Zoom</label>
+            <select id="zoomLevel">
+              <option value="0.25">25%</option>
+              <option value="0.5">50%</option>
+              <option value="0.75">75%</option>
+              <option value="1" selected>100%</option>
+              <option value="1.5">150%</option>
+              <option value="2">200%</option>
+            </select>
+          </div>
+          <div class="mouse-pos" id="mousePosition">0, 0</div>
+          <button class="tool-btn" id="sidebarToggle" title="Toggle Panel">
+            <i class="fas fa-bars"></i>
+          </button>
+        </div>
+
+        <div class="canvas-viewport" id="canvasViewport">
+          <div class="zone-overlay" id="zoneOverlay"></div>
+          <canvas id="graphCanvas"></canvas>
+          <!-- selection rect -->
+          <div class="sel-rect" id="selRect"></div>
+        </div>
+
+        <!-- mini preview -->
+        <div class="mini-preview-box">
+          <div class="mini-label">Preview</div>
+          <canvas id="previewCanvas" width="160" height="100"></canvas>
+        </div>
+      </main>
     </div>
+    <!-- app-shell -->
+
     <script src="script.js"></script>
   </body>
 </html>

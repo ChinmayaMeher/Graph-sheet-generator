@@ -16,6 +16,7 @@
   </head>
   <body>
     <div class="app-shell">
+      <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
       <!-- SIDEBAR -->
       <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -26,6 +27,13 @@
               <p>Saree &amp; Stall Creator</p>
             </div>
           </div>
+          <button
+            class="sidebar-close-btn"
+            id="sidebarCloseBtn"
+            title="Close Panel"
+          >
+            <i class="fas fa-times"></i>
+          </button>
         </div>
 
         <div class="sidebar-body">
@@ -439,6 +447,53 @@
           <button class="tool-btn" id="sidebarToggle" title="Toggle Panel">
             <i class="fas fa-bars"></i>
           </button>
+        </div>
+
+        <!-- IMAGE PLACEMENT CONTROLS -->
+        <div class="placement-panel" id="placementPanel" style="display: none;">
+          <div class="placement-header">
+            <h3><i class="fas fa-arrows-alt"></i> Adjust Uploaded Image</h3>
+          </div>
+          <div class="placement-body">
+            <div class="ctrl-row">
+              <label>Zone Mask</label>
+              <select id="placementZone">
+                <option value="all">Full Canvas</option>
+                <option value="body">Body Zone</option>
+                <option value="border">Border Zone</option>
+                <option value="pallu">Pallu Zone</option>
+              </select>
+            </div>
+            <div class="ctrl-row-group">
+              <div class="ctrl-row compact">
+                <label>X Cell</label>
+                <input type="number" id="placementX" value="0" />
+              </div>
+              <div class="ctrl-row compact">
+                <label>Y Cell</label>
+                <input type="number" id="placementY" value="0" />
+              </div>
+            </div>
+            <div class="ctrl-row-group">
+              <div class="ctrl-row compact">
+                <label>Width</label>
+                <input type="number" id="placementW" value="20" />
+              </div>
+              <div class="ctrl-row compact">
+                <label>Height</label>
+                <input type="number" id="placementH" value="20" />
+              </div>
+            </div>
+            <div class="ctrl-row-check">
+              <input type="checkbox" id="placementLockAspect" checked />
+              <label for="placementLockAspect">Lock Aspect Ratio</label>
+            </div>
+            <p class="placement-hint"><i class="fas fa-info-circle"></i> Tip: Drag the image on the canvas to move it.</p>
+          </div>
+          <div class="placement-footer">
+            <button class="action-btn primary" id="placementApplyBtn"><i class="fas fa-check"></i> Place</button>
+            <button class="action-btn danger" id="placementCancelBtn"><i class="fas fa-times"></i> Cancel</button>
+          </div>
         </div>
 
         <div class="canvas-viewport" id="canvasViewport">

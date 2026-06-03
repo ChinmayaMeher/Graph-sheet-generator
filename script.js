@@ -38,6 +38,13 @@ let S = {
   patScale: 2,
   maxColors: 16,
   ditherMode: "none",
+  placementImage: null,
+  placementX: 0,
+  placementY: 0,
+  placementW: 0,
+  placementH: 0,
+  placementZone: "all",
+  placementLockAspect: true,
 };
 
 let layers = [{ name: "Layer 1", visible: true, boxes: new Map() }];
@@ -144,6 +151,8 @@ let selStart = null,
   selEnd = null,
   selRect = { x: 0, y: 0, w: 0, h: 0 };
 let selActive = false;
+let isDraggingPlacement = false;
+let dragPlacementStart = null;
 
 // ── ZONE DEFINITIONS (fraction of canvas width) ──────────────────────
 function getZoneBounds(zone) {
@@ -177,6 +186,12 @@ document.addEventListener("DOMContentLoaded", () => {
   updateUI();
   renderZoneOverlay();
   setupKeyboard();
+
+  // Collapse sidebar by default on mobile/tablet screens
+  if (window.innerWidth <= 767) {
+    const sidebar = document.getElementById("sidebar");
+    if (sidebar) sidebar.classList.add("collapsed");
+  }
 });
 
 // ── BIND ALL CONTROLS ─────────────────────────────────────────────────
@@ -274,10 +289,61 @@ function bindControls() {
   document.getElementById("addCustomColor").onclick = addCustomColor;
   document.getElementById("sidebarToggle").onclick = toggleSidebar;
 
-  // Image upload
+  const closeBtn = document.getElementById("sidebarCloseBtn");
+  if (closeBtn) {
+    closeBtn.onclick = toggleSidebar;
+  }
+
+  const backdrop = document.getElementById("sidebarBackdrop");
+  if (backdrop) {
+    backdrop.onclick = toggleSidebar;
+  }
+
+  // Image upload — start interactive placement
   document.getElementById("imageUpload").onchange = (e) => {
-    if (e.target.files[0]) processImage(e.target.files[0]);
+    if (e.target.files[0]) startImagePlacement(e.target.files[0]);
   };
+
+  // Image placement control bindings
+  document.getElementById("placementZone").onchange = (e) => {
+    S.placementZone = e.target.value;
+    redraw();
+  };
+  document.getElementById("placementX").oninput = (e) => {
+    S.placementX = parseInt(e.target.value) || 0;
+    redraw();
+  };
+  document.getElementById("placementY").oninput = (e) => {
+    S.placementY = parseInt(e.target.value) || 0;
+    redraw();
+  };
+  document.getElementById("placementW").oninput = (e) => {
+    const val = parseInt(e.target.value) || 1;
+    S.placementW = val;
+    placementDataCache = null;
+    if (S.placementLockAspect && S.placementImage) {
+      const aspect = S.placementImage.height / S.placementImage.width;
+      S.placementH = Math.round(val * aspect) || 1;
+      document.getElementById("placementH").value = S.placementH;
+    }
+    redraw();
+  };
+  document.getElementById("placementH").oninput = (e) => {
+    const val = parseInt(e.target.value) || 1;
+    S.placementH = val;
+    placementDataCache = null;
+    if (S.placementLockAspect && S.placementImage) {
+      const aspect = S.placementImage.width / S.placementImage.height;
+      S.placementW = Math.round(val * aspect) || 1;
+      document.getElementById("placementW").value = S.placementW;
+    }
+    redraw();
+  };
+  document.getElementById("placementLockAspect").onchange = (e) => {
+    S.placementLockAspect = e.target.checked;
+  };
+  document.getElementById("placementApplyBtn").onclick = applyImagePlacement;
+  document.getElementById("placementCancelBtn").onclick = cancelImagePlacement;
 
   // Pattern buttons
   document.querySelectorAll(".pat-btn").forEach((b) => {
@@ -367,7 +433,17 @@ function setTool(t) {
 }
 
 function toggleSidebar() {
-  document.getElementById("sidebar").classList.toggle("collapsed");
+  const sidebar = document.getElementById("sidebar");
+  const backdrop = document.getElementById("sidebarBackdrop");
+  sidebar.classList.toggle("collapsed");
+  const isCollapsed = sidebar.classList.contains("collapsed");
+  if (backdrop) {
+    if (isCollapsed) {
+      backdrop.classList.remove("active");
+    } else {
+      backdrop.classList.add("active");
+    }
+  }
 }
 
 // ── KEYBOARD SHORTCUTS ────────────────────────────────────────────────
@@ -546,6 +622,21 @@ function updateStats() {
   document.getElementById("layerCount").textContent = layers.length;
 }
 
+let placementDataCache = null;
+
+function updatePlacementDataCache() {
+  if (!S.placementImage || !S.placementW || !S.placementH) {
+    placementDataCache = null;
+    return;
+  }
+  const tc = document.createElement("canvas");
+  const tx = tc.getContext("2d");
+  tc.width = S.placementW;
+  tc.height = S.placementH;
+  tx.drawImage(S.placementImage, 0, 0, S.placementW, S.placementH);
+  placementDataCache = tx.getImageData(0, 0, S.placementW, S.placementH).data;
+}
+
 // ── REDRAW ────────────────────────────────────────────────────────────
 function redraw() {
   ctx.fillStyle = S.bgColor;
@@ -600,6 +691,70 @@ function redraw() {
     ctx.stroke();
   }
 
+  // Image Placement Preview
+  if (S.placementImage) {
+    if (!placementDataCache) {
+      updatePlacementDataCache();
+    }
+    const data = placementDataCache;
+    const b = getZoneBounds(S.placementZone);
+    const palColors = (PALETTES[activePaletteTab] || []).map(hexToRgb);
+
+    const cols = Math.floor(canvas.width / S.gridSize);
+    const rows = Math.floor(canvas.height / S.gridSize);
+
+    for (let localY = 0; localY < S.placementH; localY++) {
+      for (let localX = 0; localX < S.placementW; localX++) {
+        const x = S.placementX + localX;
+        const y = S.placementY + localY;
+
+        if (x >= 0 && x < cols && y >= 0 && y < rows) {
+          const inMask = (x >= b.x0 && x <= b.x1 && y >= b.y0 && y <= b.y1);
+          
+          const i = (localY * S.placementW + localX) * 4;
+          if (data[i + 3] < 10) continue;
+
+          let r = data[i],
+            g = data[i + 1],
+            bVal = data[i + 2];
+
+          if (S.ditherMode === "palette" && palColors.length) {
+            const nc = nearestColor(r, g, bVal, palColors);
+            r = nc.r;
+            g = nc.g;
+            bVal = nc.b;
+          } else if (S.ditherMode === "bayer") {
+            const bayer = [
+              [0, 8, 2, 10],
+              [12, 4, 14, 6],
+              [3, 11, 1, 9],
+              [15, 7, 13, 5],
+            ];
+            const threshold = (bayer[localY % 4][localX % 4] / 16 - 0.5) * 50;
+            r = clamp(r + threshold);
+            g = clamp(g + threshold);
+            bVal = clamp(bVal + threshold);
+          }
+
+          ctx.fillStyle = `rgba(${r},${g},${bVal},${inMask ? 0.75 : 0.2})`;
+          ctx.fillRect(x * S.gridSize, y * S.gridSize, S.gridSize, S.gridSize);
+        }
+      }
+    }
+
+    // Draw placement bounding box
+    ctx.strokeStyle = "rgba(224, 98, 158, 0.85)";
+    ctx.lineWidth = 2 / S.zoom;
+    ctx.setLineDash([4, 4]);
+    ctx.strokeRect(
+      S.placementX * S.gridSize,
+      S.placementY * S.gridSize,
+      S.placementW * S.gridSize,
+      S.placementH * S.gridSize
+    );
+    ctx.setLineDash([]);
+  }
+
   updatePreview();
   updateStats();
 }
@@ -635,8 +790,19 @@ function getGrid(e) {
 }
 
 function onMouseDown(e) {
-  isDrawing = true;
   const { gx, gy } = getGrid(e);
+  if (S.placementImage) {
+    if (gx >= S.placementX && gx < S.placementX + S.placementW &&
+        gy >= S.placementY && gy < S.placementY + S.placementH) {
+      isDraggingPlacement = true;
+      dragPlacementStart = {
+        offsetX: gx - S.placementX,
+        offsetY: gy - S.placementY
+      };
+    }
+    return;
+  }
+  isDrawing = true;
   if (S.tool === "fill") {
     saveState();
     floodFill(gx, gy);
@@ -662,6 +828,17 @@ function onMouseDown(e) {
 function onMouseMove(e) {
   const { gx, gy } = getGrid(e);
   document.getElementById("mousePosition").textContent = `${gx}, ${gy}`;
+  
+  if (isDraggingPlacement && dragPlacementStart) {
+    S.placementX = gx - dragPlacementStart.offsetX;
+    S.placementY = gy - dragPlacementStart.offsetY;
+    document.getElementById("placementX").value = S.placementX;
+    document.getElementById("placementY").value = S.placementY;
+    redraw();
+    return;
+  }
+  if (S.placementImage) return; // block other actions in placement mode
+
   if (!isDrawing) return;
 
   if (S.tool === "select" && selStart) {
@@ -677,6 +854,11 @@ function onMouseMove(e) {
 }
 
 function onMouseUp(e) {
+  if (isDraggingPlacement) {
+    isDraggingPlacement = false;
+    dragPlacementStart = null;
+    return;
+  }
   if (!isDrawing) return;
   isDrawing = false;
   const { gx, gy } = getGrid(e);
@@ -1057,40 +1239,87 @@ function mergeLayers() {
   renderLayers();
   redraw();
 }
-
-// ── IMAGE PROCESSING ──────────────────────────────────────────────────
-function processImage(file) {
+// ── INTERACTIVE IMAGE PLACEMENT ───────────────────────────────────────
+function startImagePlacement(file) {
   const reader = new FileReader();
   reader.onload = (ev) => {
     const img = new Image();
     img.onload = () => {
       const cols = Math.floor(canvas.width / S.gridSize);
       const rows = Math.floor(canvas.height / S.gridSize);
-      const tc = document.createElement("canvas");
-      const tx = tc.getContext("2d");
-      tc.width = cols;
-      tc.height = rows;
-      tx.drawImage(img, 0, 0, cols, rows);
-      const data = tx.getImageData(0, 0, cols, rows).data;
-      saveState();
-      const layer = activeLayer();
-      layer.boxes.clear();
+      
+      // Default width is 15 grid cells, capped by canvas width
+      const defaultW = Math.min(25, Math.floor(cols * 0.5)) || 10;
+      const aspect = img.height / img.width;
+      const defaultH = Math.round(defaultW * aspect) || 10;
+      
+      S.placementImage = img;
+      S.placementX = Math.max(0, Math.floor((cols - defaultW) / 2));
+      S.placementY = Math.max(0, Math.floor((rows - defaultH) / 2));
+      S.placementW = defaultW;
+      S.placementH = defaultH;
+      S.placementZone = "all";
+      S.placementLockAspect = true;
+      placementDataCache = null;
+      
+      // Show controls and update values
+      document.getElementById("placementPanel").style.display = "flex";
+      document.getElementById("placementZone").value = S.placementZone;
+      document.getElementById("placementX").value = S.placementX;
+      document.getElementById("placementY").value = S.placementY;
+      document.getElementById("placementW").value = S.placementW;
+      document.getElementById("placementH").value = S.placementH;
+      document.getElementById("placementLockAspect").checked = S.placementLockAspect;
+      
+      // Highlight zones to help the user place the image
+      redraw();
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
 
-      const palColors = (PALETTES[activePaletteTab] || []).map(hexToRgb);
+function applyImagePlacement() {
+  if (!S.placementImage) return;
 
-      for (let y = 0; y < rows; y++) {
-        for (let x = 0; x < cols; x++) {
-          const i = (y * cols + x) * 4;
+  const cols = Math.floor(canvas.width / S.gridSize);
+  const rows = Math.floor(canvas.height / S.gridSize);
+
+  // Get zone bounds
+  const b = getZoneBounds(S.placementZone);
+
+  // Create temporary canvas to scale image
+  const tc = document.createElement("canvas");
+  const tx = tc.getContext("2d");
+  tc.width = S.placementW;
+  tc.height = S.placementH;
+  tx.drawImage(S.placementImage, 0, 0, S.placementW, S.placementH);
+  const data = tx.getImageData(0, 0, S.placementW, S.placementH).data;
+
+  saveState();
+  const layer = activeLayer();
+  const palColors = (PALETTES[activePaletteTab] || []).map(hexToRgb);
+
+  for (let localY = 0; localY < S.placementH; localY++) {
+    for (let localX = 0; localX < S.placementW; localX++) {
+      const x = S.placementX + localX;
+      const y = S.placementY + localY;
+
+      // Restrict painting to both canvas bounds and selected zone mask
+      if (x >= 0 && x < cols && y >= 0 && y < rows) {
+        if (x >= b.x0 && x <= b.x1 && y >= b.y0 && y <= b.y1) {
+          const i = (localY * S.placementW + localX) * 4;
           if (data[i + 3] < 10) continue;
+          
           let r = data[i],
             g = data[i + 1],
-            b = data[i + 2];
+            bVal = data[i + 2];
 
           if (S.ditherMode === "palette" && palColors.length) {
-            const nc = nearestColor(r, g, b, palColors);
+            const nc = nearestColor(r, g, bVal, palColors);
             r = nc.r;
             g = nc.g;
-            b = nc.b;
+            bVal = nc.b;
           } else if (S.ditherMode === "bayer") {
             const bayer = [
               [0, 8, 2, 10],
@@ -1098,19 +1327,34 @@ function processImage(file) {
               [3, 11, 1, 9],
               [15, 7, 13, 5],
             ];
-            const threshold = (bayer[y % 4][x % 4] / 16 - 0.5) * 50;
+            const threshold = (bayer[localY % 4][localX % 4] / 16 - 0.5) * 50;
             r = clamp(r + threshold);
             g = clamp(g + threshold);
-            b = clamp(b + threshold);
+            bVal = clamp(bVal + threshold);
           }
-          layer.boxes.set(`${x},${y}`, `rgba(${r},${g},${b},${S.drawOpacity})`);
+          layer.boxes.set(`${x},${y}`, `rgba(${r},${g},${bVal},${S.drawOpacity})`);
         }
       }
-      updateUI();
-    };
-    img.src = ev.target.result;
-  };
-  reader.readAsDataURL(file);
+    }
+  }
+
+  cancelImagePlacement();
+}
+
+function cancelImagePlacement() {
+  S.placementImage = null;
+  S.placementX = 0;
+  S.placementY = 0;
+  S.placementW = 0;
+  S.placementH = 0;
+  placementDataCache = null;
+  
+  // Hide panel
+  document.getElementById("placementPanel").style.display = "none";
+  // Reset file input
+  document.getElementById("imageUpload").value = "";
+  
+  redraw();
 }
 
 function nearestColor(r, g, b, palette) {

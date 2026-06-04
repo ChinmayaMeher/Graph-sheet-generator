@@ -47,6 +47,9 @@ let S = {
   placementLockAspect: true,
 };
 
+// Stores smoothly-placed images: drawn on canvas with grid on top
+let placedImages = []; // [{img, canvasX, canvasY, canvasW, canvasH, opacity}]
+
 let layers = [{ name: "Layer 1", visible: true, boxes: new Map() }];
 let activeLayerIndex = 0;
 function activeLayer() {
@@ -661,22 +664,50 @@ function redraw() {
     });
   });
 
-  // Grid lines
+  // Placed images drawn smoothly — grid will render on top of them
+  placedImages.forEach((pi) => {
+    ctx.save();
+    ctx.globalAlpha = pi.opacity !== undefined ? pi.opacity : 1;
+    ctx.drawImage(pi.img, pi.canvasX, pi.canvasY, pi.canvasW, pi.canvasH);
+    ctx.restore();
+  });
+
+  // Grid lines (cross-grid: horizontal + vertical + both diagonals per cell)
   if (S.showGrid) {
     ctx.strokeStyle = S.gridColor;
     ctx.lineWidth = 0.5;
     ctx.beginPath();
-    for (let x = 0; x <= canvas.width; x += S.gridSize) {
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, canvas.height);
-    }
+
+    // Horizontal lines
     for (let y = 0; y <= canvas.height; y += S.gridSize) {
       ctx.moveTo(0, y);
       ctx.lineTo(canvas.width, y);
     }
+    // Vertical lines
+    for (let x = 0; x <= canvas.width; x += S.gridSize) {
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, canvas.height);
+    }
+
+    // Diagonal lines inside each cell (\ direction)
+    const cols = Math.floor(canvas.width / S.gridSize);
+    const rows = Math.floor(canvas.height / S.gridSize);
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        const cx = col * S.gridSize;
+        const cy = row * S.gridSize;
+        // top-left to bottom-right
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + S.gridSize, cy + S.gridSize);
+        // top-right to bottom-left
+        ctx.moveTo(cx + S.gridSize, cy);
+        ctx.lineTo(cx, cy + S.gridSize);
+      }
+    }
+
     ctx.stroke();
 
-    // Superbox lines
+    // Superbox lines (thicker, drawn on top)
     ctx.strokeStyle = S.superboxBorderColor;
     ctx.lineWidth = 1.5;
     ctx.beginPath();
@@ -691,69 +722,7 @@ function redraw() {
     ctx.stroke();
   }
 
-  // Image Placement Preview
-  if (S.placementImage) {
-    if (!placementDataCache) {
-      updatePlacementDataCache();
-    }
-    const data = placementDataCache;
-    const b = getZoneBounds(S.placementZone);
-    const palColors = (PALETTES[activePaletteTab] || []).map(hexToRgb);
-
-    const cols = Math.floor(canvas.width / S.gridSize);
-    const rows = Math.floor(canvas.height / S.gridSize);
-
-    for (let localY = 0; localY < S.placementH; localY++) {
-      for (let localX = 0; localX < S.placementW; localX++) {
-        const x = S.placementX + localX;
-        const y = S.placementY + localY;
-
-        if (x >= 0 && x < cols && y >= 0 && y < rows) {
-          const inMask = (x >= b.x0 && x <= b.x1 && y >= b.y0 && y <= b.y1);
-          
-          const i = (localY * S.placementW + localX) * 4;
-          if (data[i + 3] < 10) continue;
-
-          let r = data[i],
-            g = data[i + 1],
-            bVal = data[i + 2];
-
-          if (S.ditherMode === "palette" && palColors.length) {
-            const nc = nearestColor(r, g, bVal, palColors);
-            r = nc.r;
-            g = nc.g;
-            bVal = nc.b;
-          } else if (S.ditherMode === "bayer") {
-            const bayer = [
-              [0, 8, 2, 10],
-              [12, 4, 14, 6],
-              [3, 11, 1, 9],
-              [15, 7, 13, 5],
-            ];
-            const threshold = (bayer[localY % 4][localX % 4] / 16 - 0.5) * 50;
-            r = clamp(r + threshold);
-            g = clamp(g + threshold);
-            bVal = clamp(bVal + threshold);
-          }
-
-          ctx.fillStyle = `rgba(${r},${g},${bVal},${inMask ? 0.75 : 0.2})`;
-          ctx.fillRect(x * S.gridSize, y * S.gridSize, S.gridSize, S.gridSize);
-        }
-      }
-    }
-
-    // Draw placement bounding box
-    ctx.strokeStyle = "rgba(224, 98, 158, 0.85)";
-    ctx.lineWidth = 2 / S.zoom;
-    ctx.setLineDash([4, 4]);
-    ctx.strokeRect(
-      S.placementX * S.gridSize,
-      S.placementY * S.gridSize,
-      S.placementW * S.gridSize,
-      S.placementH * S.gridSize
-    );
-    ctx.setLineDash([]);
-  }
+  // Image overlay is rendered as HTML element – no canvas drawing needed here
 
   updatePreview();
   updateStats();
@@ -792,12 +761,16 @@ function getGrid(e) {
 function onMouseDown(e) {
   const { gx, gy } = getGrid(e);
   if (S.placementImage) {
-    if (gx >= S.placementX && gx < S.placementX + S.placementW &&
-        gy >= S.placementY && gy < S.placementY + S.placementH) {
+    if (
+      gx >= S.placementX &&
+      gx < S.placementX + S.placementW &&
+      gy >= S.placementY &&
+      gy < S.placementY + S.placementH
+    ) {
       isDraggingPlacement = true;
       dragPlacementStart = {
         offsetX: gx - S.placementX,
-        offsetY: gy - S.placementY
+        offsetY: gy - S.placementY,
       };
     }
     return;
@@ -828,7 +801,7 @@ function onMouseDown(e) {
 function onMouseMove(e) {
   const { gx, gy } = getGrid(e);
   document.getElementById("mousePosition").textContent = `${gx}, ${gy}`;
-  
+
   if (isDraggingPlacement && dragPlacementStart) {
     S.placementX = gx - dragPlacementStart.offsetX;
     S.placementY = gy - dragPlacementStart.offsetY;
@@ -1240,105 +1213,161 @@ function mergeLayers() {
   redraw();
 }
 // ── INTERACTIVE IMAGE PLACEMENT ───────────────────────────────────────
+// ── IMAGE OVERLAY (drag + resize) ────────────────────────────────────
+let _ovl = null; // { el, img, vpRect, startX, startY, startLeft, startTop, startW, startH, resizeDir }
+
 function startImagePlacement(file) {
   const reader = new FileReader();
   reader.onload = (ev) => {
-    const img = new Image();
-    img.onload = () => {
-      const cols = Math.floor(canvas.width / S.gridSize);
-      const rows = Math.floor(canvas.height / S.gridSize);
-      
-      // Default width is 15 grid cells, capped by canvas width
-      const defaultW = Math.min(25, Math.floor(cols * 0.5)) || 10;
-      const aspect = img.height / img.width;
-      const defaultH = Math.round(defaultW * aspect) || 10;
-      
-      S.placementImage = img;
-      S.placementX = Math.max(0, Math.floor((cols - defaultW) / 2));
-      S.placementY = Math.max(0, Math.floor((rows - defaultH) / 2));
-      S.placementW = defaultW;
-      S.placementH = defaultH;
+    const imgEl = document.getElementById("overlayImg");
+    const ovlEl = document.getElementById("imgOverlay");
+    const vp = document.getElementById("canvasViewport");
+
+    imgEl.src = ev.target.result;
+    imgEl.onload = () => {
+      // Start in centre at ~40% of canvas width
+      const vpW = canvas.offsetWidth * S.zoom;
+      const vpH = canvas.offsetHeight * S.zoom;
+      const nat = imgEl.naturalWidth / imgEl.naturalHeight;
+      const w = Math.round(vpW * 0.4);
+      const h = Math.round(w / nat);
+      const left = Math.round((vpW - w) / 2);
+      const top = Math.round((vpH - h) / 2);
+
+      ovlEl.style.left = left + "px";
+      ovlEl.style.top = top + "px";
+      ovlEl.style.width = w + "px";
+      ovlEl.style.height = h + "px";
+      ovlEl.style.display = "block";
+
+      // Store source image for apply step
+      S.placementImage = imgEl;
       S.placementZone = "all";
-      S.placementLockAspect = true;
-      placementDataCache = null;
-      
-      // Show controls and update values
-      document.getElementById("placementPanel").style.display = "flex";
-      document.getElementById("placementZone").value = S.placementZone;
-      document.getElementById("placementX").value = S.placementX;
-      document.getElementById("placementY").value = S.placementY;
-      document.getElementById("placementW").value = S.placementW;
-      document.getElementById("placementH").value = S.placementH;
-      document.getElementById("placementLockAspect").checked = S.placementLockAspect;
-      
-      // Highlight zones to help the user place the image
-      redraw();
+
+      // Hide old placement panel — controls are now on the overlay toolbar
+      document.getElementById("placementPanel").style.display = "none";
+
+      _ovl = { el: ovlEl, img: imgEl };
+      _bindOverlayEvents(ovlEl);
     };
-    img.src = ev.target.result;
   };
   reader.readAsDataURL(file);
+}
+
+function _bindOverlayEvents(ovlEl) {
+  // Drag to move
+  ovlEl.addEventListener("mousedown", _ovlMouseDown);
+  // Resize handles
+  ovlEl.querySelectorAll(".ovl-handle").forEach((h) => {
+    h.addEventListener("mousedown", _ovlResizeDown);
+  });
+  // Toolbar buttons
+  document.getElementById("ovlApplyBtn").onclick = applyImagePlacement;
+  document.getElementById("ovlCancelBtn").onclick = cancelImagePlacement;
+}
+
+function _ovlMouseDown(e) {
+  if (e.target.classList.contains("ovl-handle")) return;
+  if (e.target.closest(".ovl-toolbar")) return;
+  e.preventDefault();
+  const ovlEl = document.getElementById("imgOverlay");
+  _ovl.startX = e.clientX;
+  _ovl.startY = e.clientY;
+  _ovl.startLeft = parseInt(ovlEl.style.left) || 0;
+  _ovl.startTop = parseInt(ovlEl.style.top) || 0;
+  _ovl.dragging = true;
+  document.addEventListener("mousemove", _ovlMouseMove);
+  document.addEventListener("mouseup", _ovlMouseUp);
+}
+
+function _ovlMouseMove(e) {
+  if (!_ovl) return;
+  const ovlEl = document.getElementById("imgOverlay");
+  if (_ovl.dragging) {
+    ovlEl.style.left = _ovl.startLeft + e.clientX - _ovl.startX + "px";
+    ovlEl.style.top = _ovl.startTop + e.clientY - _ovl.startY + "px";
+  } else if (_ovl.resizeDir) {
+    const dx = e.clientX - _ovl.startX;
+    const dy = e.clientY - _ovl.startY;
+    const dir = _ovl.resizeDir;
+    let left = _ovl.startLeft,
+      top = _ovl.startTop;
+    let w = _ovl.startW,
+      h = _ovl.startH;
+    const MIN = 30;
+
+    if (dir.includes("e")) w = Math.max(MIN, _ovl.startW + dx);
+    if (dir.includes("s")) h = Math.max(MIN, _ovl.startH + dy);
+    if (dir.includes("w")) {
+      w = Math.max(MIN, _ovl.startW - dx);
+      left = _ovl.startLeft + (_ovl.startW - w);
+    }
+    if (dir.includes("n")) {
+      h = Math.max(MIN, _ovl.startH - dy);
+      top = _ovl.startTop + (_ovl.startH - h);
+    }
+
+    ovlEl.style.left = left + "px";
+    ovlEl.style.top = top + "px";
+    ovlEl.style.width = w + "px";
+    ovlEl.style.height = h + "px";
+  }
+}
+
+function _ovlMouseUp() {
+  if (_ovl) {
+    _ovl.dragging = false;
+    _ovl.resizeDir = null;
+  }
+  document.removeEventListener("mousemove", _ovlMouseMove);
+  document.removeEventListener("mouseup", _ovlMouseUp);
+}
+
+function _ovlResizeDown(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  const ovlEl = document.getElementById("imgOverlay");
+  _ovl.startX = e.clientX;
+  _ovl.startY = e.clientY;
+  _ovl.startLeft = parseInt(ovlEl.style.left) || 0;
+  _ovl.startTop = parseInt(ovlEl.style.top) || 0;
+  _ovl.startW = parseInt(ovlEl.style.width) || ovlEl.offsetWidth;
+  _ovl.startH = parseInt(ovlEl.style.height) || ovlEl.offsetHeight;
+  _ovl.resizeDir = e.currentTarget.dataset.dir;
+  _ovl.dragging = false;
+  document.addEventListener("mousemove", _ovlMouseMove);
+  document.addEventListener("mouseup", _ovlMouseUp);
 }
 
 function applyImagePlacement() {
   if (!S.placementImage) return;
 
-  const cols = Math.floor(canvas.width / S.gridSize);
-  const rows = Math.floor(canvas.height / S.gridSize);
+  const ovlEl = document.getElementById("imgOverlay");
 
-  // Get zone bounds
-  const b = getZoneBounds(S.placementZone);
+  // Pixel offset of overlay relative to canvas viewport (accounting for zoom)
+  const ovlLeft = parseInt(ovlEl.style.left) || 0;
+  const ovlTop = parseInt(ovlEl.style.top) || 0;
+  const ovlWidth = parseInt(ovlEl.style.width) || ovlEl.offsetWidth;
+  const ovlHeight = parseInt(ovlEl.style.height) || ovlEl.offsetHeight;
 
-  // Create temporary canvas to scale image
-  const tc = document.createElement("canvas");
-  const tx = tc.getContext("2d");
-  tc.width = S.placementW;
-  tc.height = S.placementH;
-  tx.drawImage(S.placementImage, 0, 0, S.placementW, S.placementH);
-  const data = tx.getImageData(0, 0, S.placementW, S.placementH).data;
+  // Convert to true canvas pixel coords (undo zoom)
+  const canvasX = ovlLeft / S.zoom;
+  const canvasY = ovlTop / S.zoom;
+  const canvasW = ovlWidth / S.zoom;
+  const canvasH = ovlHeight / S.zoom;
 
-  saveState();
-  const layer = activeLayer();
-  const palColors = (PALETTES[activePaletteTab] || []).map(hexToRgb);
-
-  for (let localY = 0; localY < S.placementH; localY++) {
-    for (let localX = 0; localX < S.placementW; localX++) {
-      const x = S.placementX + localX;
-      const y = S.placementY + localY;
-
-      // Restrict painting to both canvas bounds and selected zone mask
-      if (x >= 0 && x < cols && y >= 0 && y < rows) {
-        if (x >= b.x0 && x <= b.x1 && y >= b.y0 && y <= b.y1) {
-          const i = (localY * S.placementW + localX) * 4;
-          if (data[i + 3] < 10) continue;
-          
-          let r = data[i],
-            g = data[i + 1],
-            bVal = data[i + 2];
-
-          if (S.ditherMode === "palette" && palColors.length) {
-            const nc = nearestColor(r, g, bVal, palColors);
-            r = nc.r;
-            g = nc.g;
-            bVal = nc.b;
-          } else if (S.ditherMode === "bayer") {
-            const bayer = [
-              [0, 8, 2, 10],
-              [12, 4, 14, 6],
-              [3, 11, 1, 9],
-              [15, 7, 13, 5],
-            ];
-            const threshold = (bayer[localY % 4][localX % 4] / 16 - 0.5) * 50;
-            r = clamp(r + threshold);
-            g = clamp(g + threshold);
-            bVal = clamp(bVal + threshold);
-          }
-          layer.boxes.set(`${x},${y}`, `rgba(${r},${g},${bVal},${S.drawOpacity})`);
-        }
-      }
-    }
-  }
+  // Store as a smooth placed image — drawn directly on canvas, grid goes on top
+  placedImages.push({
+    img: S.placementImage,
+    canvasX,
+    canvasY,
+    canvasW,
+    canvasH,
+    opacity: S.drawOpacity,
+  });
 
   cancelImagePlacement();
+  redraw();
 }
 
 function cancelImagePlacement() {
@@ -1348,12 +1377,17 @@ function cancelImagePlacement() {
   S.placementW = 0;
   S.placementH = 0;
   placementDataCache = null;
-  
-  // Hide panel
+  _ovl = null;
+
+  const ovlEl = document.getElementById("imgOverlay");
+  if (ovlEl) ovlEl.style.display = "none";
   document.getElementById("placementPanel").style.display = "none";
-  // Reset file input
   document.getElementById("imageUpload").value = "";
-  
+
+  // Unbind document listeners
+  document.removeEventListener("mousemove", _ovlMouseMove);
+  document.removeEventListener("mouseup", _ovlMouseUp);
+
   redraw();
 }
 
@@ -1412,6 +1446,7 @@ ${rects}
 function clearAll() {
   saveState();
   activeLayer().boxes.clear();
+  placedImages = []; // also remove placed images
   redraw();
 }
 

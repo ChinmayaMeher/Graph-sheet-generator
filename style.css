@@ -1932,7 +1932,7 @@ body {
 .img-overlay {
   position: absolute;
   border: 2px solid #e0629e;
-  box-shadow: 0 0 0 1px rgba(224,98,158,0.4), 0 4px 24px rgba(0,0,0,0.35);
+  box-shadow: 0 0 0 1px rgba(221, 99, 158, 0.4), 0 4px 24px rgba(0, 0, 0, 0.35);
   cursor: move;
   box-sizing: border-box;
   z-index: 50;
@@ -1955,19 +1955,51 @@ body {
   width: 12px;
   height: 12px;
   background: #fff;
-  border: 2px solid #e0629e;
+  border: 2px solid #dd649f;
   border-radius: 50%;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
   z-index: 51;
 }
-.ovl-nw { top: -6px;  left: -6px;  cursor: nw-resize; }
-.ovl-n  { top: -6px;  left: calc(50% - 6px); cursor: n-resize; }
-.ovl-ne { top: -6px;  right: -6px; cursor: ne-resize; }
-.ovl-e  { top: calc(50% - 6px); right: -6px; cursor: e-resize; }
-.ovl-se { bottom: -6px; right: -6px; cursor: se-resize; }
-.ovl-s  { bottom: -6px; left: calc(50% - 6px); cursor: s-resize; }
-.ovl-sw { bottom: -6px; left: -6px; cursor: sw-resize; }
-.ovl-w  { top: calc(50% - 6px); left: -6px; cursor: w-resize; }
+.ovl-nw {
+  top: -6px;
+  left: -6px;
+  cursor: nw-resize;
+}
+.ovl-n {
+  top: -6px;
+  left: calc(50% - 6px);
+  cursor: n-resize;
+}
+.ovl-ne {
+  top: -6px;
+  right: -6px;
+  cursor: ne-resize;
+}
+.ovl-e {
+  top: calc(50% - 6px);
+  right: -6px;
+  cursor: e-resize;
+}
+.ovl-se {
+  bottom: -6px;
+  right: -6px;
+  cursor: se-resize;
+}
+.ovl-s {
+  bottom: -6px;
+  left: calc(50% - 6px);
+  cursor: s-resize;
+}
+.ovl-sw {
+  bottom: -6px;
+  left: -6px;
+  cursor: sw-resize;
+}
+.ovl-w {
+  top: calc(50% - 6px);
+  left: -6px;
+  cursor: w-resize;
+}
 
 /* Overlay action toolbar */
 .ovl-toolbar {
@@ -1977,12 +2009,12 @@ body {
   transform: translateX(-50%);
   display: flex;
   gap: 6px;
-  background: rgba(25,20,45,0.92);
+  background: rgba(25, 20, 45, 0.92);
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(255,255,255,0.12);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 20px;
   padding: 5px 10px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
   white-space: nowrap;
   pointer-events: auto;
 }
@@ -1992,7 +2024,7 @@ body {
   border: none;
   color: #fff;
   font-size: 12px;
-  font-family: 'DM Sans', sans-serif;
+  font-family: "DM Sans", sans-serif;
   padding: 4px 10px;
   border-radius: 12px;
   cursor: pointer;
@@ -2002,7 +2034,15 @@ body {
   transition: background 0.15s;
 }
 
-#ovlApplyBtn  { color: #5af09e; }
-#ovlCancelBtn { color: #f07070; }
-.ovl-toolbar button:hover { background: rgba(255,255,255,0.12); }
-.ovl-toolbar button:active { transform: scale(0.96); }
+#ovlApplyBtn {
+  color: #5af09e;
+}
+#ovlCancelBtn {
+  color: #f07070;
+}
+.ovl-toolbar button:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+.ovl-toolbar button:active {
+  transform: scale(0.96);
+}

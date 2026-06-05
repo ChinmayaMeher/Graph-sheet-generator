@@ -1931,7 +1931,7 @@ body {
 
 .img-overlay {
   position: absolute;
-  border: 2px solid #e0629e;
+  border: 2px solid #de5f9c;
   box-shadow: 0 0 0 1px rgba(221, 99, 158, 0.4), 0 4px 24px rgba(0, 0, 0, 0.35);
   cursor: move;
   box-sizing: border-box;
@@ -1954,7 +1954,7 @@ body {
   position: absolute;
   width: 12px;
   height: 12px;
-  background: #fff;
+  background: #f1f0f0;
   border: 2px solid #dd649f;
   border-radius: 50%;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);

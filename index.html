@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Saree & Stall Design Studio</title>
+    <title>Cotton Saree & Stall Design Studio</title>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
@@ -450,7 +450,7 @@
         </div>
 
         <!-- IMAGE PLACEMENT CONTROLS -->
-        <div class="placement-panel" id="placementPanel" style="display: none;">
+        <div class="placement-panel" id="placementPanel" style="display: none">
           <div class="placement-header">
             <h3><i class="fas fa-arrows-alt"></i> Adjust Uploaded Image</h3>
           </div>
@@ -488,11 +488,18 @@
               <input type="checkbox" id="placementLockAspect" checked />
               <label for="placementLockAspect">Lock Aspect Ratio</label>
             </div>
-            <p class="placement-hint"><i class="fas fa-info-circle"></i> Tip: Drag the image on the canvas to move it.</p>
+            <p class="placement-hint">
+              <i class="fas fa-info-circle"></i> Tip: Drag the image on the
+              canvas to move it.
+            </p>
           </div>
           <div class="placement-footer">
-            <button class="action-btn primary" id="placementApplyBtn"><i class="fas fa-check"></i> Place</button>
-            <button class="action-btn danger" id="placementCancelBtn"><i class="fas fa-times"></i> Cancel</button>
+            <button class="action-btn primary" id="placementApplyBtn">
+              <i class="fas fa-check"></i> Place
+            </button>
+            <button class="action-btn danger" id="placementCancelBtn">
+              <i class="fas fa-times"></i> Cancel
+            </button>
           </div>
         </div>
 
@@ -502,19 +509,23 @@
           <!-- selection rect -->
           <div class="sel-rect" id="selRect"></div>
           <!-- draggable/resizable image overlay -->
-          <div class="img-overlay" id="imgOverlay" style="display:none;">
+          <div class="img-overlay" id="imgOverlay" style="display: none">
             <img id="overlayImg" src="" alt="placement" draggable="false" />
             <div class="ovl-handle ovl-nw" data-dir="nw"></div>
-            <div class="ovl-handle ovl-n"  data-dir="n"></div>
+            <div class="ovl-handle ovl-n" data-dir="n"></div>
             <div class="ovl-handle ovl-ne" data-dir="ne"></div>
-            <div class="ovl-handle ovl-e"  data-dir="e"></div>
+            <div class="ovl-handle ovl-e" data-dir="e"></div>
             <div class="ovl-handle ovl-se" data-dir="se"></div>
-            <div class="ovl-handle ovl-s"  data-dir="s"></div>
+            <div class="ovl-handle ovl-s" data-dir="s"></div>
             <div class="ovl-handle ovl-sw" data-dir="sw"></div>
-            <div class="ovl-handle ovl-w"  data-dir="w"></div>
+            <div class="ovl-handle ovl-w" data-dir="w"></div>
             <div class="ovl-toolbar">
-              <button id="ovlApplyBtn"  title="Place image"><i class="fas fa-check"></i> Place</button>
-              <button id="ovlCancelBtn" title="Cancel"><i class="fas fa-times"></i> Cancel</button>
+              <button id="ovlApplyBtn" title="Place image">
+                <i class="fas fa-check"></i> Place
+              </button>
+              <button id="ovlCancelBtn" title="Cancel">
+                <i class="fas fa-times"></i> Cancel
+              </button>
             </div>
           </div>
         </div>

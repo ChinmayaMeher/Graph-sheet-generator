@@ -49,6 +49,7 @@ let S = {
   placementLockAspect: true,
   uploadedBorderImage: null,
   uploadedPatternImage: null,
+  uploadedPalluImage: null,
   patternOccupancy: 1.0,
 };
 
@@ -321,6 +322,22 @@ function bindControls() {
         img.src = ev.target.result;
         img.onload = () => {
           S.uploadedBorderImage = img;
+          redraw();
+        };
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    }
+  };
+
+  // Pallu image upload
+  document.getElementById("palluImageUpload").onchange = (e) => {
+    if (e.target.files[0]) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const img = new Image();
+        img.src = ev.target.result;
+        img.onload = () => {
+          S.uploadedPalluImage = img;
           redraw();
         };
       };
@@ -758,6 +775,29 @@ function redraw() {
           );
         }
       }
+    }
+    ctx.restore();
+  }
+
+  // ── Draw Uploaded Pallu Image ──────────────────────────────────────
+  if (S.uploadedPalluImage && activeTemplate === "saree") {
+    const b = getZoneBounds("pallu");
+    const palluX = b.x0 * S.gridSize;
+    const palluY = b.y0 * S.gridSize;
+    const palluW = (b.x1 - b.x0 + 1) * S.gridSize;
+    const palluH = (b.y1 - b.y0 + 1) * S.gridSize;
+    const aspect = S.uploadedPalluImage.naturalWidth / S.uploadedPalluImage.naturalHeight;
+
+    ctx.save();
+    // Fit to Pallu height, and tile horizontally inside Pallu width
+    const tileH = palluH;
+    const tileW = tileH * aspect;
+    for (let tx = palluX; tx < palluX + palluW; tx += tileW) {
+      // Clip drawing to Pallu width so it doesn't overflow the Pallu bounds
+      ctx.beginPath();
+      ctx.rect(tx, palluY, Math.min(tileW, palluX + palluW - tx), palluH);
+      ctx.clip();
+      ctx.drawImage(S.uploadedPalluImage, tx, palluY, tileW, tileH);
     }
     ctx.restore();
   }

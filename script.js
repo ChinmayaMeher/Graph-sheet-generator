@@ -14,6 +14,8 @@ const prevCanvas = document.getElementById("previewCanvas");
 const prevCtx = prevCanvas.getContext("2d");
 
 // ── STATE ────────────────────────────────────────────────────────────
+let activeTemplate = "saree";
+
 let S = {
   width: 1200,
   height: 800,
@@ -45,6 +47,9 @@ let S = {
   placementH: 0,
   placementZone: "all",
   placementLockAspect: true,
+  uploadedBorderImage: null,
+  uploadedPatternImage: null,
+  patternOccupancy: 1.0,
 };
 
 // Stores smoothly-placed images: drawn on canvas with grid on top
@@ -307,6 +312,44 @@ function bindControls() {
     if (e.target.files[0]) startImagePlacement(e.target.files[0]);
   };
 
+  // Border image upload
+  document.getElementById("borderImageUpload").onchange = (e) => {
+    if (e.target.files[0]) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const img = new Image();
+        img.src = ev.target.result;
+        img.onload = () => {
+          S.uploadedBorderImage = img;
+          redraw();
+        };
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    }
+  };
+
+  // Pattern image upload
+  document.getElementById("patternImageUpload").onchange = (e) => {
+    if (e.target.files[0]) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const img = new Image();
+        img.src = ev.target.result;
+        img.onload = () => {
+          S.uploadedPatternImage = img;
+          redraw();
+        };
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    }
+  };
+
+  // Pattern occupancy selection
+  document.getElementById("patternOccupancy").onchange = (e) => {
+    S.patternOccupancy = parseFloat(e.target.value) || 1.0;
+    redraw();
+  };
+
   // Image placement control bindings
   document.getElementById("placementZone").onchange = (e) => {
     S.placementZone = e.target.value;
@@ -500,6 +543,7 @@ function addCustomColor() {
 
 // ── TEMPLATES ─────────────────────────────────────────────────────────
 function applyTemplate(name) {
+  activeTemplate = name;
   saveState();
   layers = [{ name: "Layer 1", visible: true, boxes: new Map() }];
   activeLayerIndex = 0;
@@ -610,6 +654,13 @@ function updateUI() {
 function applyZoom() {
   canvas.style.width = canvas.width * S.zoom + "px";
   canvas.style.height = canvas.height * S.zoom + "px";
+
+  if (_ovl && _ovl.el && _ovl.canvasW !== undefined) {
+    _ovl.el.style.left = canvas.offsetLeft + _ovl.canvasX * S.zoom + "px";
+    _ovl.el.style.top = canvas.offsetTop + _ovl.canvasY * S.zoom + "px";
+    _ovl.el.style.width = _ovl.canvasW * S.zoom + "px";
+    _ovl.el.style.height = _ovl.canvasH * S.zoom + "px";
+  }
 }
 
 function updateStats() {
@@ -671,6 +722,91 @@ function redraw() {
     ctx.drawImage(pi.img, pi.canvasX, pi.canvasY, pi.canvasW, pi.canvasH);
     ctx.restore();
   });
+
+  // ── Draw Uploaded Border Image ─────────────────────────────────────
+  if (S.uploadedBorderImage) {
+    const cols = Math.floor(canvas.width / S.gridSize);
+    const rows = Math.floor(canvas.height / S.gridSize);
+    const borderRowCount = Math.max(1, Math.floor(rows * 0.12));
+    const borderHeight = borderRowCount * S.gridSize;
+    const aspect =
+      S.uploadedBorderImage.naturalWidth / S.uploadedBorderImage.naturalHeight;
+
+    ctx.save();
+    if (activeTemplate === "border") {
+      const tileH = canvas.height;
+      const tileW = tileH * aspect;
+      for (let tx = 0; tx < canvas.width; tx += tileW) {
+        ctx.drawImage(S.uploadedBorderImage, tx, 0, tileW, tileH);
+      }
+    } else {
+      const tileH = borderHeight;
+      const tileW = tileH * aspect;
+      // Top Border
+      for (let tx = 0; tx < canvas.width; tx += tileW) {
+        ctx.drawImage(S.uploadedBorderImage, tx, 0, tileW, tileH);
+      }
+      // Bottom Border
+      if (activeTemplate === "saree") {
+        for (let tx = 0; tx < canvas.width; tx += tileW) {
+          ctx.drawImage(
+            S.uploadedBorderImage,
+            tx,
+            canvas.height - tileH,
+            tileW,
+            tileH
+          );
+        }
+      }
+    }
+    ctx.restore();
+  }
+
+  // ── Draw Uploaded Pattern Image ────────────────────────────────────
+  if (S.uploadedPatternImage) {
+    const cols = Math.floor(canvas.width / S.gridSize);
+    const rows = Math.floor(canvas.height / S.gridSize);
+
+    // Determine the body bounds
+    let x0 = 0,
+      y0 = 0,
+      x1 = cols - 1,
+      y1 = rows - 1;
+    if (activeTemplate === "saree") {
+      const borderRowCount = Math.floor(rows * 0.12);
+      x0 = 0;
+      y0 = borderRowCount;
+      x1 = Math.floor(cols * 0.7) - 1;
+      y1 = rows - 1 - borderRowCount;
+    }
+
+    const occ = S.patternOccupancy || 1.0;
+    const maxDim = S.gridSize * occ;
+    const aspect =
+      S.uploadedPatternImage.naturalWidth /
+      S.uploadedPatternImage.naturalHeight;
+
+    let targetW, targetH;
+    if (aspect > 1) {
+      targetW = maxDim;
+      targetH = maxDim / aspect;
+    } else {
+      targetH = maxDim;
+      targetW = maxDim * aspect;
+    }
+
+    ctx.save();
+    for (let gx = x0; gx <= x1; gx++) {
+      for (let gy = y0; gy <= y1; gy++) {
+        const cellX = gx * S.gridSize;
+        const cellY = gy * S.gridSize;
+        const drawX = cellX + (S.gridSize - targetW) / 2;
+        const drawY = cellY + (S.gridSize - targetH) / 2;
+        ctx.drawImage(S.uploadedPatternImage, drawX, drawY, targetW, targetH);
+      }
+    }
+    ctx.restore();
+  }
 
   // Grid lines (cross-grid: horizontal + vertical + both diagonals per cell)
   if (S.showGrid) {
@@ -1225,14 +1361,14 @@ function startImagePlacement(file) {
 
     imgEl.src = ev.target.result;
     imgEl.onload = () => {
-      // Start in centre at ~40% of canvas width
-      const vpW = canvas.offsetWidth * S.zoom;
-      const vpH = canvas.offsetHeight * S.zoom;
+      // Start in centre at ~40% of canvas width on screen (layout pixels)
+      const vpW = canvas.offsetWidth;
+      const vpH = canvas.offsetHeight;
       const nat = imgEl.naturalWidth / imgEl.naturalHeight;
       const w = Math.round(vpW * 0.4);
       const h = Math.round(w / nat);
-      const left = Math.round((vpW - w) / 2);
-      const top = Math.round((vpH - h) / 2);
+      const left = canvas.offsetLeft + Math.round((vpW - w) / 2);
+      const top = canvas.offsetTop + Math.round((vpH - h) / 2);
 
       ovlEl.style.left = left + "px";
       ovlEl.style.top = top + "px";
@@ -1247,7 +1383,14 @@ function startImagePlacement(file) {
       // Hide old placement panel — controls are now on the overlay toolbar
       document.getElementById("placementPanel").style.display = "none";
 
-      _ovl = { el: ovlEl, img: imgEl };
+      _ovl = {
+        el: ovlEl,
+        img: imgEl,
+        canvasX: (left - canvas.offsetLeft) / S.zoom,
+        canvasY: (top - canvas.offsetTop) / S.zoom,
+        canvasW: w / S.zoom,
+        canvasH: h / S.zoom,
+      };
       _bindOverlayEvents(ovlEl);
     };
   };
@@ -1284,8 +1427,12 @@ function _ovlMouseMove(e) {
   if (!_ovl) return;
   const ovlEl = document.getElementById("imgOverlay");
   if (_ovl.dragging) {
-    ovlEl.style.left = _ovl.startLeft + e.clientX - _ovl.startX + "px";
-    ovlEl.style.top = _ovl.startTop + e.clientY - _ovl.startY + "px";
+    const left = _ovl.startLeft + e.clientX - _ovl.startX;
+    const top = _ovl.startTop + e.clientY - _ovl.startY;
+    ovlEl.style.left = left + "px";
+    ovlEl.style.top = top + "px";
+    _ovl.canvasX = (left - canvas.offsetLeft) / S.zoom;
+    _ovl.canvasY = (top - canvas.offsetTop) / S.zoom;
   } else if (_ovl.resizeDir) {
     const dx = e.clientX - _ovl.startX;
     const dy = e.clientY - _ovl.startY;
@@ -1311,6 +1458,11 @@ function _ovlMouseMove(e) {
     ovlEl.style.top = top + "px";
     ovlEl.style.width = w + "px";
     ovlEl.style.height = h + "px";
+
+    _ovl.canvasX = (left - canvas.offsetLeft) / S.zoom;
+    _ovl.canvasY = (top - canvas.offsetTop) / S.zoom;
+    _ovl.canvasW = w / S.zoom;
+    _ovl.canvasH = h / S.zoom;
   }
 }
 
@@ -1350,9 +1502,9 @@ function applyImagePlacement() {
   const ovlWidth = parseInt(ovlEl.style.width) || ovlEl.offsetWidth;
   const ovlHeight = parseInt(ovlEl.style.height) || ovlEl.offsetHeight;
 
-  // Convert to true canvas pixel coords (undo zoom)
-  const canvasX = ovlLeft / S.zoom;
-  const canvasY = ovlTop / S.zoom;
+  // Convert to true canvas pixel coords (undo zoom and offsets relative to canvas viewport)
+  const canvasX = (ovlLeft - canvas.offsetLeft) / S.zoom;
+  const canvasY = (ovlTop - canvas.offsetTop) / S.zoom;
   const canvasW = ovlWidth / S.zoom;
   const canvasH = ovlHeight / S.zoom;
 
@@ -1858,7 +2010,7 @@ const BORDER_DESIGNS = [
       stripe1: "#cc0000",
       stripe2: "#111111",
       accent: "#ffffff",
-      body: "#8e1a4e"
+      body: "#8e1a4e",
     },
     draw(cx, x, y, w, h) {
       // 1. Outer Edge Solid Band (top 12% of height)
@@ -1926,7 +2078,12 @@ const BORDER_DESIGNS = [
           for (let c = 0; c < 4; c++) {
             const isStripe1 = (r + c) % 2 === 0;
             cx.fillStyle = isStripe1 ? this.colors.stripe1 : this.colors.accent;
-            cx.fillRect(px + c * cell, checkerY + blockPadding + r * cell, cell, cell);
+            cx.fillRect(
+              px + c * cell,
+              checkerY + blockPadding + r * cell,
+              cell,
+              cell
+            );
           }
         }
       }
@@ -1967,7 +2124,7 @@ const BORDER_DESIGNS = [
       // 5. Kumbha Temple Spikes (from 76% to 100%)
       const spikeH = h - (sepY3 - y);
       const spikeW = Math.max(8, Math.floor(spikeH * 1.2));
-      
+
       cx.fillStyle = this.colors.stripe1;
       cx.strokeStyle = this.colors.accent;
       cx.lineWidth = 1;

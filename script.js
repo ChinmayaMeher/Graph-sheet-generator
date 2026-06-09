@@ -1851,6 +1851,150 @@ if (document.readyState === "loading") {
 
 const BORDER_DESIGNS = [
   {
+    id: "sambalpuri_ikat",
+    label: "Sambalpuri Ikat",
+    desc: "Odisha border with temple Kumbha spikes, Rudraksha bands, and Pasapali checkers",
+    colors: {
+      stripe1: "#cc0000",
+      stripe2: "#111111",
+      accent: "#ffffff",
+      body: "#8e1a4e"
+    },
+    draw(cx, x, y, w, h) {
+      // 1. Outer Edge Solid Band (top 12% of height)
+      const bandH1 = Math.max(2, Math.floor(h * 0.12));
+      cx.fillStyle = this.colors.stripe1;
+      cx.fillRect(x, y, w, bandH1);
+
+      // Fine gold/white stripe below it
+      cx.strokeStyle = this.colors.accent;
+      cx.lineWidth = 1;
+      cx.beginPath();
+      cx.moveTo(x, y + bandH1);
+      cx.lineTo(x + w, y + bandH1);
+      cx.stroke();
+
+      // 2. First Rudraksha Bead Stripe (from 12% to 24%)
+      const rudH = Math.max(2, Math.floor(h * 0.12));
+      const rudY1 = y + bandH1;
+      cx.fillStyle = this.colors.stripe2;
+      cx.fillRect(x, rudY1, w, rudH);
+
+      // Draw little Rudraksha beads (diamonds with a dot)
+      cx.fillStyle = this.colors.accent;
+      const beadSize = Math.max(3, Math.floor(rudH * 0.5));
+      const beadStep = beadSize * 2.5;
+      const centerY1 = rudY1 + rudH / 2;
+
+      for (let bx = x + beadSize; bx < x + w; bx += beadStep) {
+        cx.beginPath();
+        cx.moveTo(bx, centerY1 - beadSize / 2);
+        cx.lineTo(bx + beadSize / 2, centerY1);
+        cx.lineTo(bx, centerY1 + beadSize / 2);
+        cx.lineTo(bx - beadSize / 2, centerY1);
+        cx.closePath();
+        cx.fill();
+      }
+
+      // Separator line
+      const sepY1 = rudY1 + rudH;
+      cx.strokeStyle = this.colors.accent;
+      cx.beginPath();
+      cx.moveTo(x, sepY1);
+      cx.lineTo(x + w, sepY1);
+      cx.stroke();
+
+      // 3. Central Pasapali Checkerboard Blocks (from 24% to 64%)
+      const checkerH = Math.max(6, Math.floor(h * 0.4));
+      const checkerY = sepY1;
+      cx.fillStyle = this.colors.stripe2;
+      cx.fillRect(x, checkerY, w, checkerH);
+
+      const blockSize = Math.max(10, Math.floor(checkerH * 0.85));
+      const blockPadding = Math.max(1, Math.floor((checkerH - blockSize) / 2));
+      const step = blockSize + blockPadding * 3;
+
+      for (let px = x + blockPadding; px < x + w - blockSize; px += step) {
+        // Draw white frame around checker block
+        cx.strokeStyle = this.colors.accent;
+        cx.lineWidth = 1;
+        cx.strokeRect(px, checkerY + blockPadding, blockSize, blockSize);
+
+        // Draw 4x4 checkerboard inside block
+        const cell = blockSize / 4;
+        for (let r = 0; r < 4; r++) {
+          for (let c = 0; c < 4; c++) {
+            const isStripe1 = (r + c) % 2 === 0;
+            cx.fillStyle = isStripe1 ? this.colors.stripe1 : this.colors.accent;
+            cx.fillRect(px + c * cell, checkerY + blockPadding + r * cell, cell, cell);
+          }
+        }
+      }
+
+      // Separator line
+      const sepY2 = checkerY + checkerH;
+      cx.strokeStyle = this.colors.accent;
+      cx.beginPath();
+      cx.moveTo(x, sepY2);
+      cx.lineTo(x + w, sepY2);
+      cx.stroke();
+
+      // 4. Second Rudraksha Bead Stripe (from 64% to 76%)
+      const rudY2 = sepY2;
+      cx.fillStyle = this.colors.stripe2;
+      cx.fillRect(x, rudY2, w, rudH);
+
+      const centerY2 = rudY2 + rudH / 2;
+      cx.fillStyle = this.colors.accent;
+      for (let bx = x + beadSize; bx < x + w; bx += beadStep) {
+        cx.beginPath();
+        cx.moveTo(bx, centerY2 - beadSize / 2);
+        cx.lineTo(bx + beadSize / 2, centerY2);
+        cx.lineTo(bx, centerY2 + beadSize / 2);
+        cx.lineTo(bx - beadSize / 2, centerY2);
+        cx.closePath();
+        cx.fill();
+      }
+
+      // Separator line
+      const sepY3 = rudY2 + rudH;
+      cx.strokeStyle = this.colors.accent;
+      cx.beginPath();
+      cx.moveTo(x, sepY3);
+      cx.lineTo(x + w, sepY3);
+      cx.stroke();
+
+      // 5. Kumbha Temple Spikes (from 76% to 100%)
+      const spikeH = h - (sepY3 - y);
+      const spikeW = Math.max(8, Math.floor(spikeH * 1.2));
+      
+      cx.fillStyle = this.colors.stripe1;
+      cx.strokeStyle = this.colors.accent;
+      cx.lineWidth = 1;
+
+      for (let px = x + 3; px < x + w - spikeW; px += spikeW * 1.3) {
+        // Triangle pointing inwards (downwards from sepY3)
+        cx.beginPath();
+        cx.moveTo(px, sepY3);
+        cx.lineTo(px + spikeW / 2, sepY3 + spikeH);
+        cx.lineTo(px + spikeW, sepY3);
+        cx.closePath();
+        cx.fill();
+        cx.stroke();
+
+        // Small inner triangle accent
+        cx.fillStyle = this.colors.accent;
+        cx.beginPath();
+        cx.moveTo(px + spikeW * 0.3, sepY3);
+        cx.lineTo(px + spikeW / 2, sepY3 + spikeH * 0.4);
+        cx.lineTo(px + spikeW * 0.7, sepY3);
+        cx.closePath();
+        cx.fill();
+        cx.fillStyle = this.colors.stripe1; // reset fill
+      }
+    },
+  },
+  {
     id: "ikatchecker",
     label: "Ikat Checker",
     desc: "Pink/black ikat checkerboard rows — classic Sambalpuri cotton",

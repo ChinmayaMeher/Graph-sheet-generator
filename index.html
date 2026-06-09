@@ -74,6 +74,119 @@
             </div>
           </section>
 
+          <!-- BORDER TYPE SELECTOR -->
+          <section class="panel" id="borderTypePanel">
+            <div
+              class="panel-title collapsible-title"
+              id="borderTypePanelTitle"
+            >
+              <span><i class="fas fa-border-style"></i> Saree Border Type</span>
+              <i
+                class="fas fa-chevron-down panel-chevron"
+                id="borderTypePanelChevron"
+              ></i>
+            </div>
+            <div class="border-type-body" id="borderTypeBody">
+              <div class="border-type-grid" id="borderTypeGrid">
+                <!-- Plain Border -->
+                <div
+                  class="border-type-card active"
+                  data-border="plain"
+                  title="Plain Border – no border stripes"
+                >
+                  <canvas
+                    class="btype-thumb"
+                    id="bthumb-plain"
+                    width="120"
+                    height="70"
+                  ></canvas>
+                  <span>Plain</span>
+                </div>
+                <!-- Single Border -->
+                <div
+                  class="border-type-card"
+                  data-border="single"
+                  title="Single Border – one stripe on each long edge"
+                >
+                  <canvas
+                    class="btype-thumb"
+                    id="bthumb-single"
+                    width="120"
+                    height="70"
+                  ></canvas>
+                  <span>Single</span>
+                </div>
+                <!-- Double Border -->
+                <div
+                  class="border-type-card"
+                  data-border="double"
+                  title="Double Border – two stripes on each long edge"
+                >
+                  <canvas
+                    class="btype-thumb"
+                    id="bthumb-double"
+                    width="120"
+                    height="70"
+                  ></canvas>
+                  <span>Double</span>
+                </div>
+                <!-- Triple Border -->
+                <div
+                  class="border-type-card"
+                  data-border="triple"
+                  title="Triple Border – three stripes on each long edge"
+                >
+                  <canvas
+                    class="btype-thumb"
+                    id="bthumb-triple"
+                    width="120"
+                    height="70"
+                  ></canvas>
+                  <span>Triple</span>
+                </div>
+                <!-- Four Border -->
+                <div
+                  class="border-type-card"
+                  data-border="four"
+                  title="Four Border – four stripes on each long edge"
+                >
+                  <canvas
+                    class="btype-thumb"
+                    id="bthumb-four"
+                    width="120"
+                    height="70"
+                  ></canvas>
+                  <span>Four</span>
+                </div>
+              </div>
+
+              <!-- Border colour pickers -->
+              <div
+                class="border-colors"
+                id="borderColors"
+                style="display: none"
+              >
+                <div class="border-colors-title">Border Stripe Colors</div>
+                <div id="borderColorRows"></div>
+              </div>
+
+              <!-- Body / Pallu colour -->
+              <div class="ctrl-row" style="margin-top: 8px">
+                <label>Body</label>
+                <input type="color" id="btBodyColor" value="#8e1a4e" />
+                <label>Pallu</label>
+                <input type="color" id="btPalluColor" value="#c0392b" />
+              </div>
+              <button
+                class="action-btn primary full"
+                id="applyBorderTypeBtn"
+                style="margin-top: 8px"
+              >
+                <i class="fas fa-magic"></i> Apply Border Layout
+              </button>
+            </div>
+          </section>
+
           <!-- CANVAS SIZE -->
           <section class="panel">
             <div class="panel-title">

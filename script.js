@@ -1463,3 +1463,383 @@ function rgbToHex(r, g, b) {
 function clamp(v) {
   return Math.max(0, Math.min(255, Math.round(v)));
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// BORDER TYPE SELECTOR
+// ══════════════════════════════════════════════════════════════════════
+
+const BORDER_TYPES = {
+  plain: { label: "Plain", stripes: 0, defaultColors: [] },
+  single: { label: "Single", stripes: 1, defaultColors: ["#d4af37"] },
+  double: {
+    label: "Double",
+    stripes: 2,
+    defaultColors: ["#d4af37", "#8e1a4e"],
+  },
+  triple: {
+    label: "Triple",
+    stripes: 3,
+    defaultColors: ["#d4af37", "#8e1a4e", "#e74c3c"],
+  },
+  four: {
+    label: "Four",
+    stripes: 4,
+    defaultColors: ["#d4af37", "#8e1a4e", "#e74c3c", "#f39c12"],
+  },
+};
+
+let activeBorderType = "plain";
+const borderTypeColors = {};
+Object.keys(BORDER_TYPES).forEach((k) => {
+  borderTypeColors[k] = [...BORDER_TYPES[k].defaultColors];
+});
+
+// ── Colour helpers ────────────────────────────────────────────────────
+function _darken(hex, amount) {
+  let { r, g, b } = hexToRgb(hex);
+  return rgbToHex(
+    Math.max(0, r - amount),
+    Math.max(0, g - amount),
+    Math.max(0, b - amount)
+  );
+}
+function _lighten(hex, amount) {
+  let { r, g, b } = hexToRgb(hex);
+  return rgbToHex(
+    Math.min(255, r + amount),
+    Math.min(255, g + amount),
+    Math.min(255, b + amount)
+  );
+}
+function _alpha(hex, a) {
+  const { r, g, b } = hexToRgb(hex);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+// ── Draw woven-texture fill on a region ───────────────────────────────
+function _drawWovenRegion(cx, x, y, w, h, col1, col2) {
+  const ts = 4; // thread size
+  for (let px = x; px < x + w; px += ts) {
+    for (let py = y; py < y + h; py += ts) {
+      const even = (Math.floor(px / ts) + Math.floor(py / ts)) % 2 === 0;
+      cx.fillStyle = even ? col1 : col2;
+      cx.fillRect(px, py, Math.min(ts, x + w - px), Math.min(ts, y + h - py));
+    }
+  }
+}
+
+// ── Draw ikat/zigzag stripe pattern ───────────────────────────────────
+function _drawStripePattern(cx, x, y, w, h, col, idx) {
+  // Base fill
+  cx.fillStyle = col;
+  cx.fillRect(x, y, w, h);
+
+  // Overlay woven threads
+  _drawWovenRegion(cx, x, y, w, h, col, _darken(col, 45));
+
+  // Pattern overlay based on stripe index
+  cx.save();
+  cx.beginPath();
+  cx.rect(x, y, w, h);
+  cx.clip();
+
+  const goldLight = _lighten(col, 80);
+  cx.strokeStyle = _alpha(goldLight, 0.55);
+  cx.lineWidth = 1;
+
+  if (idx % 4 === 0) {
+    // Zigzag
+    const step = 6;
+    for (let px = x - step; px < x + w + step; px += step) {
+      cx.beginPath();
+      for (let py = y; py < y + h; py += step) {
+        const xPos = px + (Math.floor(py / step) % 2 === 0 ? step / 2 : 0);
+        if (py === y) cx.moveTo(xPos, py);
+        else cx.lineTo(xPos, py);
+      }
+      cx.stroke();
+    }
+  } else if (idx % 4 === 1) {
+    // Diamond dots
+    cx.fillStyle = _alpha(goldLight, 0.45);
+    for (let px = x + 3; px < x + w; px += 8) {
+      for (let py = y + 3; py < y + h; py += 8) {
+        cx.beginPath();
+        cx.arc(px, py, 1.5, 0, Math.PI * 2);
+        cx.fill();
+      }
+    }
+  } else if (idx % 4 === 2) {
+    // Diagonal grid
+    for (let px = x; px < x + w; px += 5) {
+      cx.beginPath();
+      cx.moveTo(px, y);
+      cx.lineTo(px + h, y + h);
+      cx.stroke();
+    }
+  } else {
+    // Wave lines
+    for (let py = y + 3; py < y + h; py += 5) {
+      cx.beginPath();
+      for (let px = x; px <= x + w; px += 2) {
+        const wy = py + Math.sin((px - x) * 0.4) * 1.5;
+        if (px === x) cx.moveTo(px, wy);
+        else cx.lineTo(px, wy);
+      }
+      cx.stroke();
+    }
+  }
+
+  cx.restore();
+
+  // Gold edge line on each stripe boundary
+  cx.strokeStyle = _alpha("#ffd700", 0.8);
+  cx.lineWidth = 1;
+  cx.beginPath();
+  cx.moveTo(x, y);
+  cx.lineTo(x + w, y);
+  cx.stroke();
+  cx.beginPath();
+  cx.moveTo(x, y + h);
+  cx.lineTo(x + w, y + h);
+  cx.stroke();
+}
+
+// ── Rich thumbnail renderer ───────────────────────────────────────────
+function drawBorderThumb(type) {
+  const cv = document.getElementById(`bthumb-${type}`);
+  if (!cv) return;
+  const cx = cv.getContext("2d");
+  const W = cv.width,
+    H = cv.height;
+  const cfg = BORDER_TYPES[type];
+  const colors = borderTypeColors[type];
+
+  const bodyCol = document.getElementById("btBodyColor")?.value || "#8e1a4e";
+  const palluCol = document.getElementById("btPalluColor")?.value || "#c0392b";
+
+  // ── 1. Clear ─────────────────────────────────────────────────────
+  cx.clearRect(0, 0, W, H);
+
+  // Zones: body = left 72%, pallu = right 28%
+  const palluX = Math.floor(W * 0.72);
+  const bodyW = palluX;
+
+  // ── 2. Body background (woven texture) ───────────────────────────
+  _drawWovenRegion(cx, 0, 0, bodyW, H, bodyCol, _darken(bodyCol, 35));
+
+  // ── 3. Pallu (right section – denser pattern) ────────────────────
+  _drawWovenRegion(
+    cx,
+    palluX,
+    0,
+    W - palluX,
+    H,
+    palluCol,
+    _darken(palluCol, 45)
+  );
+  // Extra pallu diamond motifs
+  cx.fillStyle = _alpha(_lighten(palluCol, 70), 0.35);
+  const motifS = 10;
+  for (let px = palluX + 5; px < W; px += motifS) {
+    for (let py = 5; py < H; py += motifS) {
+      cx.beginPath();
+      cx.moveTo(px, py - 3);
+      cx.lineTo(px + 3, py);
+      cx.lineTo(px, py + 3);
+      cx.lineTo(px - 3, py);
+      cx.closePath();
+      cx.fill();
+    }
+  }
+
+  // ── 4. Gold divider between body and pallu ───────────────────────
+  cx.fillStyle = "#d4af37";
+  cx.fillRect(palluX - 2, 0, 4, H);
+
+  // ── 5. Border stripes (top + bottom, mirrored) ───────────────────
+  if (cfg.stripes > 0) {
+    // Stripe height scales so all stripes fit within ~38% of H each side
+    const totalStripeH = Math.floor(H * 0.38);
+    const stripeH = Math.max(5, Math.floor(totalStripeH / cfg.stripes));
+
+    for (let i = 0; i < cfg.stripes; i++) {
+      const col = colors[i] || "#d4af37";
+      const topY = i * stripeH;
+      const botY = H - (i + 1) * stripeH;
+
+      _drawStripePattern(cx, 0, topY, bodyW, stripeH, col, i);
+      _drawStripePattern(cx, 0, botY, bodyW, stripeH, col, i);
+    }
+  }
+
+  // ── 6. Overall border frame ──────────────────────────────────────
+  cx.strokeStyle = _alpha("#d4af37", 0.6);
+  cx.lineWidth = 1;
+  cx.strokeRect(0.5, 0.5, W - 1, H - 1);
+
+  // ── 7. Label badge ───────────────────────────────────────────────
+  const label = cfg.label + (cfg.stripes > 0 ? ` (${cfg.stripes})` : "");
+  cx.fillStyle = "rgba(0,0,0,0.55)";
+  const tw = cx.measureText(label).width + 10;
+  cx.fillRect(4, H - 17, tw, 14);
+  cx.fillStyle = "#ffffff";
+  cx.font = "bold 9px sans-serif";
+  cx.fillText(label, 9, H - 6);
+}
+
+function drawAllBorderThumbs() {
+  Object.keys(BORDER_TYPES).forEach(drawBorderThumb);
+}
+
+// ── Border colour pickers ─────────────────────────────────────────────
+function renderBorderColorPickers(type) {
+  const cfg = BORDER_TYPES[type];
+  const wrap = document.getElementById("borderColors");
+  const rows = document.getElementById("borderColorRows");
+  if (!wrap || !rows) return;
+
+  if (cfg.stripes === 0) {
+    wrap.style.display = "none";
+    return;
+  }
+  wrap.style.display = "block";
+  rows.innerHTML = "";
+
+  for (let i = 0; i < cfg.stripes; i++) {
+    const row = document.createElement("div");
+    row.className = "border-color-row";
+    const lbl = document.createElement("label");
+    lbl.textContent = `Stripe ${i + 1}`;
+    const inp = document.createElement("input");
+    inp.type = "color";
+    inp.value = borderTypeColors[type][i] || "#d4af37";
+    const idx = i;
+    inp.addEventListener("input", (e) => {
+      borderTypeColors[type][idx] = e.target.value;
+      drawBorderThumb(type);
+    });
+    row.appendChild(lbl);
+    row.appendChild(inp);
+    rows.appendChild(row);
+  }
+}
+
+// ── Apply border layout to canvas ────────────────────────────────────
+function applyBorderTypeToCanvas() {
+  const type = activeBorderType;
+  const cfg = BORDER_TYPES[type];
+  const colors = borderTypeColors[type];
+  const bodyCol = document.getElementById("btBodyColor")?.value || "#8e1a4e";
+  const palluCol = document.getElementById("btPalluColor")?.value || "#c0392b";
+
+  saveState();
+  layers[0].boxes.clear();
+
+  const cols = Math.floor(canvas.width / S.gridSize);
+  const rows = Math.floor(canvas.height / S.gridSize);
+  const bodyEndCol = Math.floor(cols * 0.7);
+  const palluStartCol = Math.floor(cols * 0.72);
+
+  const toRgbaStr = (hex) => {
+    const { r, g, b } = hexToRgb(hex);
+    return `rgba(${r},${g},${b},1)`;
+  };
+
+  // Body
+  const bodyStr = toRgbaStr(bodyCol);
+  for (let x = 0; x < bodyEndCol; x++)
+    for (let y = 0; y < rows; y++) layers[0].boxes.set(`${x},${y}`, bodyStr);
+
+  // Pallu (checkerboard)
+  for (let x = palluStartCol; x < cols; x++)
+    for (let y = 0; y < rows; y++) {
+      const col = patternColor(
+        x,
+        y,
+        "checkerboard",
+        palluCol,
+        _darken(palluCol, 30),
+        2
+      );
+      layers[0].boxes.set(`${x},${y}`, col);
+    }
+
+  // Border stripes — each stripe = 3 grid rows tall (top + bottom mirror)
+  if (cfg.stripes > 0) {
+    const stripeRows = 3;
+    for (let i = 0; i < cfg.stripes; i++) {
+      const strCol = colors[i] || "#d4af37";
+      const patTypes = ["zigzag", "diamond", "wave", "checkerboard"];
+      const patType = patTypes[i % patTypes.length];
+
+      for (let x = 0; x < bodyEndCol; x++) {
+        for (let dy = 0; dy < stripeRows; dy++) {
+          // top
+          const ty = i * stripeRows + dy;
+          if (ty < rows)
+            layers[0].boxes.set(
+              `${x},${ty}`,
+              patternColor(x, ty, patType, strCol, _darken(strCol, 40), 2)
+            );
+          // bottom mirror
+          const by = rows - 1 - (i * stripeRows + dy);
+          if (by >= 0)
+            layers[0].boxes.set(
+              `${x},${by}`,
+              patternColor(x, by, patType, strCol, _darken(strCol, 40), 2)
+            );
+        }
+      }
+    }
+  }
+
+  redraw();
+  renderLayers();
+}
+
+// ── Wire up panel ────────────────────────────────────────────────────
+function initBorderTypePanel() {
+  const title = document.getElementById("borderTypePanelTitle");
+  const body = document.getElementById("borderTypeBody");
+  const chevron = document.getElementById("borderTypePanelChevron");
+
+  if (title && body && chevron) {
+    title.addEventListener("click", () => {
+      const open = body.classList.toggle("expanded");
+      chevron.classList.toggle("open", open);
+      if (open) drawAllBorderThumbs();
+    });
+  }
+
+  document.querySelectorAll(".border-type-card").forEach((card) => {
+    card.addEventListener("click", () => {
+      document
+        .querySelectorAll(".border-type-card")
+        .forEach((c) => c.classList.remove("active"));
+      card.classList.add("active");
+      activeBorderType = card.dataset.border;
+      renderBorderColorPickers(activeBorderType);
+      drawAllBorderThumbs();
+    });
+  });
+
+  ["btBodyColor", "btPalluColor"].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener("input", drawAllBorderThumbs);
+  });
+
+  const applyBtn = document.getElementById("applyBorderTypeBtn");
+  if (applyBtn) applyBtn.addEventListener("click", applyBorderTypeToCanvas);
+
+  // Panel starts expanded — draw thumbs immediately
+  drawAllBorderThumbs();
+  // Belt-and-suspenders: also draw after fonts/layout settle
+  setTimeout(drawAllBorderThumbs, 300);
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initBorderTypePanel);
+} else {
+  initBorderTypePanel();
+}

@@ -1843,3 +1843,620 @@ if (document.readyState === "loading") {
 } else {
   initBorderTypePanel();
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// PREDEFINED BORDER DESIGNS
+// Inspired by Sambalpuri / Odisha ikat saree borders
+// ══════════════════════════════════════════════════════════════════════
+
+const BORDER_DESIGNS = [
+  {
+    id: "ikatchecker",
+    label: "Ikat Checker",
+    desc: "Pink/black ikat checkerboard rows — classic Sambalpuri cotton",
+    colors: {
+      stripe1: "#d63384",
+      stripe2: "#1a1a2e",
+      accent: "#f8c8e0",
+      body: "#c0c0c0",
+    },
+    draw(cx, x, y, w, h) {
+      const cell = Math.max(4, Math.floor(h / 6));
+      for (let row = 0; row < Math.ceil(h / cell); row++) {
+        const ry = y + row * cell;
+        const rh = Math.min(cell, y + h - ry);
+        const baseCol =
+          row % 2 === 0 ? this.colors.stripe1 : this.colors.stripe2;
+        // Ikat checker effect
+        for (let col = 0; col < Math.ceil(w / cell); col++) {
+          const rx = x + col * cell;
+          const rw = Math.min(cell, x + w - rx);
+          const even = (row + col) % 2 === 0;
+          cx.fillStyle = even ? baseCol : this.colors.accent;
+          cx.fillRect(rx, ry, rw, rh);
+          // Ikat blur lines
+          cx.strokeStyle = "rgba(0,0,0,0.25)";
+          cx.lineWidth = 1;
+          cx.beginPath();
+          cx.moveTo(rx, ry);
+          cx.lineTo(rx + rw, ry + rh);
+          cx.stroke();
+        }
+      }
+    },
+  },
+  {
+    id: "peacockikat",
+    label: "Peacock Ikat",
+    desc: "Teal/maroon with peacock-motif ikat repeat",
+    colors: {
+      stripe1: "#0e7c6c",
+      stripe2: "#4a0e2e",
+      accent: "#d4af37",
+      body: "#006655",
+    },
+    draw(cx, x, y, w, h) {
+      // Base teal fill
+      cx.fillStyle = this.colors.stripe1;
+      cx.fillRect(x, y, w, h);
+      // Maroon band in center
+      const bandH = Math.floor(h * 0.4);
+      const bandY = y + Math.floor(h * 0.3);
+      cx.fillStyle = this.colors.stripe2;
+      cx.fillRect(x, bandY, w, bandH);
+      // Gold peacock-eye dots
+      cx.fillStyle = this.colors.accent;
+      const step = Math.max(10, Math.floor(w / 8));
+      for (let px = x + step / 2; px < x + w; px += step) {
+        // Eye shape
+        cx.beginPath();
+        cx.ellipse(
+          px,
+          bandY + bandH / 2,
+          step * 0.3,
+          bandH * 0.35,
+          0,
+          0,
+          Math.PI * 2
+        );
+        cx.fill();
+        cx.strokeStyle = this.colors.stripe1;
+        cx.lineWidth = 1.5;
+        cx.stroke();
+        // Inner dot
+        cx.fillStyle = this.colors.stripe2;
+        cx.beginPath();
+        cx.arc(px, bandY + bandH / 2, step * 0.1, 0, Math.PI * 2);
+        cx.fill();
+        cx.fillStyle = this.colors.accent;
+      }
+      // Gold edge lines
+      cx.strokeStyle = this.colors.accent;
+      cx.lineWidth = 2;
+      [y + 1, y + h - 2].forEach((ly) => {
+        cx.beginPath();
+        cx.moveTo(x, ly);
+        cx.lineTo(x + w, ly);
+        cx.stroke();
+      });
+    },
+  },
+  {
+    id: "diamondgrid",
+    label: "Diamond Grid",
+    desc: "Blue base with red/white diamond lattice — Pasapali style",
+    colors: {
+      stripe1: "#1a1aff",
+      stripe2: "#cc0000",
+      accent: "#ffffff",
+      body: "#0000cc",
+    },
+    draw(cx, x, y, w, h) {
+      cx.fillStyle = this.colors.stripe1;
+      cx.fillRect(x, y, w, h);
+      const d = Math.max(8, Math.floor(h / 4));
+      cx.strokeStyle = this.colors.accent;
+      cx.lineWidth = 1.5;
+      for (let px = x - d; px < x + w + d; px += d) {
+        for (let py = y - d; py < y + h + d; py += d) {
+          cx.beginPath();
+          cx.moveTo(px + d / 2, py);
+          cx.lineTo(px + d, py + d / 2);
+          cx.lineTo(px + d / 2, py + d);
+          cx.lineTo(px, py + d / 2);
+          cx.closePath();
+          cx.stroke();
+          // Alternate fill
+          if ((Math.floor((px - x) / d) + Math.floor((py - y) / d)) % 2 === 0) {
+            cx.fillStyle = this.colors.stripe2;
+            cx.fill();
+          }
+        }
+      }
+    },
+  },
+  {
+    id: "zigzagikat",
+    label: "Zigzag Ikat",
+    desc: "Red/black diagonal zigzag ikat — typical cotton border",
+    colors: {
+      stripe1: "#cc1111",
+      stripe2: "#111111",
+      accent: "#f5c518",
+      body: "#aa0000",
+    },
+    draw(cx, x, y, w, h) {
+      const rowH = Math.max(4, Math.floor(h / 5));
+      for (let row = 0; row < 5; row++) {
+        const ry = y + row * rowH;
+        const rh = Math.min(rowH, y + h - ry);
+        const col = row % 2 === 0 ? this.colors.stripe1 : this.colors.stripe2;
+        cx.fillStyle = col;
+        cx.fillRect(x, ry, w, rh);
+        // Zigzag overlay
+        cx.strokeStyle = this.colors.accent;
+        cx.lineWidth = 1.2;
+        const step = 8;
+        cx.beginPath();
+        let toggle = false;
+        for (let px = x; px <= x + w; px += step) {
+          const zy = ry + (toggle ? rh * 0.2 : rh * 0.8);
+          if (px === x) cx.moveTo(px, zy);
+          else cx.lineTo(px, zy);
+          toggle = !toggle;
+        }
+        cx.stroke();
+      }
+    },
+  },
+  {
+    id: "floralscroll",
+    label: "Floral Scroll",
+    desc: "Maroon with gold floral scrollwork — rich pallu border",
+    colors: {
+      stripe1: "#6b0f1a",
+      stripe2: "#d4af37",
+      accent: "#f5e6c8",
+      body: "#4a0a12",
+    },
+    draw(cx, x, y, w, h) {
+      cx.fillStyle = this.colors.stripe1;
+      cx.fillRect(x, y, w, h);
+      // Gold scroll vine line
+      cx.strokeStyle = this.colors.stripe2;
+      cx.lineWidth = 1.5;
+      const midY = y + h / 2;
+      cx.beginPath();
+      for (let px = x; px <= x + w; px += 2) {
+        const vy = midY + Math.sin((px - x) * 0.12) * (h * 0.25);
+        if (px === x) cx.moveTo(px, vy);
+        else cx.lineTo(px, vy);
+      }
+      cx.stroke();
+      // Floral dots along vine
+      cx.fillStyle = this.colors.accent;
+      const flStep = Math.max(12, Math.floor(w / 10));
+      for (let px = x + flStep / 2; px < x + w; px += flStep) {
+        const fy = midY + Math.sin((px - x) * 0.12) * (h * 0.25);
+        // Petal cluster
+        for (let a = 0; a < 6; a++) {
+          const ang = (a / 6) * Math.PI * 2;
+          cx.beginPath();
+          cx.ellipse(
+            px + Math.cos(ang) * h * 0.15,
+            fy + Math.sin(ang) * h * 0.15,
+            h * 0.09,
+            h * 0.05,
+            ang,
+            0,
+            Math.PI * 2
+          );
+          cx.fill();
+        }
+        cx.fillStyle = this.colors.stripe2;
+        cx.beginPath();
+        cx.arc(px, fy, h * 0.07, 0, Math.PI * 2);
+        cx.fill();
+        cx.fillStyle = this.colors.accent;
+      }
+      // Gold edge lines
+      cx.strokeStyle = this.colors.stripe2;
+      cx.lineWidth = 2;
+      [y + 1, y + h - 2].forEach((ly) => {
+        cx.beginPath();
+        cx.moveTo(x, ly);
+        cx.lineTo(x + w, ly);
+        cx.stroke();
+      });
+    },
+  },
+  {
+    id: "elephantrow",
+    label: "Elephant Row",
+    desc: "Mauve/red with elephant procession motif — Pattachitra style",
+    colors: {
+      stripe1: "#8b1a4a",
+      stripe2: "#d4622a",
+      accent: "#f5deb3",
+      body: "#6b0f35",
+    },
+    draw(cx, x, y, w, h) {
+      cx.fillStyle = this.colors.stripe1;
+      cx.fillRect(x, y, w, h);
+      // Red band top/bottom
+      const bandH = Math.floor(h * 0.18);
+      cx.fillStyle = this.colors.stripe2;
+      cx.fillRect(x, y, w, bandH);
+      cx.fillRect(x, y + h - bandH, w, bandH);
+      // Elephant silhouettes
+      const elW = Math.max(16, Math.floor(h * 0.6));
+      const elH = Math.floor(h * 0.55);
+      const elY = y + Math.floor(h * 0.22);
+      cx.fillStyle = this.colors.accent;
+      for (let px = x + elW / 2; px < x + w; px += elW * 1.4) {
+        // Body oval
+        cx.beginPath();
+        cx.ellipse(
+          px,
+          elY + elH * 0.45,
+          elW * 0.38,
+          elH * 0.32,
+          0,
+          0,
+          Math.PI * 2
+        );
+        cx.fill();
+        // Head
+        cx.beginPath();
+        cx.arc(px + elW * 0.3, elY + elH * 0.28, elH * 0.2, 0, Math.PI * 2);
+        cx.fill();
+        // Trunk
+        cx.strokeStyle = this.colors.accent;
+        cx.lineWidth = Math.max(2, elH * 0.08);
+        cx.beginPath();
+        cx.moveTo(px + elW * 0.45, elY + elH * 0.35);
+        cx.bezierCurveTo(
+          px + elW * 0.6,
+          elY + elH * 0.5,
+          px + elW * 0.55,
+          elY + elH * 0.72,
+          px + elW * 0.35,
+          elY + elH * 0.78
+        );
+        cx.stroke();
+        // Legs
+        for (let l = 0; l < 3; l++) {
+          cx.strokeStyle = this.colors.accent;
+          cx.lineWidth = Math.max(2, elH * 0.07);
+          cx.beginPath();
+          cx.moveTo(px - elW * 0.2 + l * elW * 0.2, elY + elH * 0.7);
+          cx.lineTo(px - elW * 0.2 + l * elW * 0.2, elY + elH * 0.92);
+          cx.stroke();
+        }
+      }
+      // Gold edge
+      cx.strokeStyle = this.colors.accent;
+      cx.lineWidth = 1.5;
+      [y + bandH, y + h - bandH].forEach((ly) => {
+        cx.beginPath();
+        cx.moveTo(x, ly);
+        cx.lineTo(x + w, ly);
+        cx.stroke();
+      });
+    },
+  },
+  {
+    id: "deertemple",
+    label: "Deer & Temple",
+    desc: "Teal background with deer and temple arch motifs — ikat weave",
+    colors: {
+      stripe1: "#0a5c52",
+      stripe2: "#7a1a3a",
+      accent: "#f0c060",
+      body: "#085045",
+    },
+    draw(cx, x, y, w, h) {
+      cx.fillStyle = this.colors.stripe1;
+      cx.fillRect(x, y, w, h);
+      const archW = Math.max(18, Math.floor(h * 0.7));
+      const archH = Math.floor(h * 0.75);
+      const archY = y + Math.floor(h * 0.13);
+      cx.fillStyle = this.colors.stripe2;
+      // Temple arches
+      for (let px = x + archW * 0.5; px < x + w; px += archW * 1.6) {
+        // Arch
+        cx.beginPath();
+        cx.moveTo(px - archW * 0.3, archY + archH);
+        cx.lineTo(px - archW * 0.3, archY + archH * 0.4);
+        cx.arc(px, archY + archH * 0.4, archW * 0.3, Math.PI, 0, false);
+        cx.lineTo(px + archW * 0.3, archY + archH);
+        cx.closePath();
+        cx.fill();
+        cx.strokeStyle = this.colors.accent;
+        cx.lineWidth = 1.2;
+        cx.stroke();
+        // Spire
+        cx.fillStyle = this.colors.accent;
+        cx.beginPath();
+        cx.moveTo(px, archY - archH * 0.05);
+        cx.lineTo(px - archW * 0.1, archY + archH * 0.1);
+        cx.lineTo(px + archW * 0.1, archY + archH * 0.1);
+        cx.closePath();
+        cx.fill();
+        cx.fillStyle = this.colors.stripe2;
+        // Deer between arches
+        if (px + archW * 0.8 < x + w) {
+          const dx = px + archW * 0.85,
+            dy = archY + archH * 0.3;
+          cx.strokeStyle = this.colors.accent;
+          cx.lineWidth = Math.max(1.5, archH * 0.06);
+          cx.beginPath();
+          cx.arc(dx, dy, archH * 0.15, 0, Math.PI * 2);
+          cx.stroke();
+          // Legs
+          [
+            [
+              dx - archH * 0.1,
+              dy + archH * 0.15,
+              dx - archH * 0.15,
+              dy + archH * 0.4,
+            ],
+            [
+              dx + archH * 0.1,
+              dy + archH * 0.15,
+              dx + archH * 0.05,
+              dy + archH * 0.4,
+            ],
+          ].forEach(([x1, y1, x2, y2]) => {
+            cx.beginPath();
+            cx.moveTo(x1, y1);
+            cx.lineTo(x2, y2);
+            cx.stroke();
+          });
+        }
+      }
+      cx.strokeStyle = this.colors.accent;
+      cx.lineWidth = 1.5;
+      [y + 1, y + h - 2].forEach((ly) => {
+        cx.beginPath();
+        cx.moveTo(x, ly);
+        cx.lineTo(x + w, ly);
+        cx.stroke();
+      });
+    },
+  },
+  {
+    id: "geomwave",
+    label: "Geom Wave",
+    desc: "Black/red with geometric wave-repeat — Bomkai tribal style",
+    colors: {
+      stripe1: "#111111",
+      stripe2: "#cc0000",
+      accent: "#ffffff",
+      body: "#1a1a1a",
+    },
+    draw(cx, x, y, w, h) {
+      // Alternate black and red rows
+      const nRows = 4;
+      const rh = Math.floor(h / nRows);
+      const rowCols = [
+        this.colors.stripe1,
+        this.colors.stripe2,
+        this.colors.stripe1,
+        this.colors.stripe2,
+      ];
+      for (let r = 0; r < nRows; r++) {
+        const ry = y + r * rh;
+        cx.fillStyle = rowCols[r];
+        cx.fillRect(x, ry, w, Math.min(rh, y + h - ry));
+        // White geometric wave
+        cx.strokeStyle = this.colors.accent;
+        cx.lineWidth = 1;
+        const step = Math.max(6, Math.floor(w / 20));
+        cx.beginPath();
+        for (let px = x; px <= x + w; px += step) {
+          const wy =
+            ry + rh / 2 + Math.sin(((px - x) / step) * Math.PI) * rh * 0.3;
+          if (px === x) cx.moveTo(px, wy);
+          else cx.lineTo(px, wy);
+        }
+        cx.stroke();
+        // Dot accents
+        cx.fillStyle = this.colors.accent;
+        for (let px = x + step; px < x + w; px += step * 2) {
+          cx.beginPath();
+          cx.arc(px, ry + rh / 2, Math.max(1.5, rh * 0.12), 0, Math.PI * 2);
+          cx.fill();
+        }
+      }
+      cx.strokeStyle = this.colors.accent;
+      cx.lineWidth = 1.5;
+      [y + 1, y + h - 2].forEach((ly) => {
+        cx.beginPath();
+        cx.moveTo(x, ly);
+        cx.lineTo(x + w, ly);
+        cx.stroke();
+      });
+    },
+  },
+];
+
+// ── Which design is selected ──────────────────────────────────────────
+let activeDesignId = BORDER_DESIGNS[0].id;
+
+// ── Draw a thumbnail for a design ────────────────────────────────────
+function drawDesignThumb(design, canvas) {
+  const cx = canvas.getContext("2d");
+  const w = canvas.width,
+    h = canvas.height;
+  cx.clearRect(0, 0, w, h);
+  // Background
+  cx.fillStyle = "#1a1a2e";
+  cx.fillRect(0, 0, w, h);
+  // Simulate saree body stripe
+  cx.fillStyle = "#2a1a3e";
+  cx.fillRect(0, Math.floor(h * 0.25), w, Math.floor(h * 0.5));
+  // Draw border band at top
+  design.draw(cx, 0, 0, w, Math.floor(h * 0.25));
+  // Mirror at bottom
+  cx.save();
+  cx.translate(0, h);
+  cx.scale(1, -1);
+  design.draw(cx, 0, 0, w, Math.floor(h * 0.25));
+  cx.restore();
+}
+
+// ── Build the design grid ─────────────────────────────────────────────
+function initBorderDesignPanel() {
+  const grid = document.getElementById("borderDesignGrid");
+  if (!grid) return;
+
+  BORDER_DESIGNS.forEach((design) => {
+    const card = document.createElement("div");
+    card.className =
+      "border-design-card" + (design.id === activeDesignId ? " active" : "");
+    card.dataset.id = design.id;
+    card.title = design.desc;
+
+    const cv = document.createElement("canvas");
+    cv.width = 120;
+    cv.height = 70;
+    card.appendChild(cv);
+
+    const lbl = document.createElement("span");
+    lbl.textContent = design.label;
+    card.appendChild(lbl);
+
+    grid.appendChild(card);
+    drawDesignThumb(design, cv);
+
+    card.addEventListener("click", () => {
+      document
+        .querySelectorAll(".border-design-card")
+        .forEach((c) => c.classList.remove("active"));
+      card.classList.add("active");
+      activeDesignId = design.id;
+    });
+  });
+
+  // Collapsible
+  const title = document.getElementById("borderDesignPanelTitle");
+  const body = document.getElementById("borderDesignBody");
+  const chevron = document.getElementById("borderDesignPanelChevron");
+  if (title && body && chevron) {
+    title.addEventListener("click", () => {
+      const open = body.classList.toggle("expanded");
+      chevron.classList.toggle("open", open);
+    });
+  }
+
+  // Apply button
+  const applyBtn = document.getElementById("applyBorderDesignBtn");
+  if (applyBtn) applyBtn.addEventListener("click", applyBorderDesign);
+}
+
+// ── Apply the selected design to the canvas grid ──────────────────────
+function applyBorderDesign() {
+  const design = BORDER_DESIGNS.find((d) => d.id === activeDesignId);
+  if (!design) return;
+
+  const bodyCol = document.getElementById("bdBodyColor")?.value || "#8e1a4e";
+  const palluCol = document.getElementById("bdPalluColor")?.value || "#1a3a8e";
+
+  saveState();
+  layers[0].boxes.clear();
+
+  const cols = Math.floor(canvas.width / S.gridSize);
+  const rows = Math.floor(canvas.height / S.gridSize);
+  const bodyEndCol = Math.floor(cols * 0.7);
+  const palluStartCol = Math.floor(cols * 0.72);
+
+  const toRgba = (hex) => {
+    const { r, g, b } = hexToRgb(hex);
+    return `rgba(${r},${g},${b},1)`;
+  };
+
+  // --- Fill body ---
+  for (let x = 0; x < bodyEndCol; x++)
+    for (let y = 0; y < rows; y++)
+      layers[0].boxes.set(`${x},${y}`, toRgba(bodyCol));
+
+  // --- Fill pallu with checkerboard ---
+  for (let x = palluStartCol; x < cols; x++)
+    for (let y = 0; y < rows; y++) {
+      const col = patternColor(
+        x,
+        y,
+        "checkerboard",
+        palluCol,
+        _darken(palluCol, 30),
+        2
+      );
+      layers[0].boxes.set(`${x},${y}`, col);
+    }
+
+  // --- Draw border design using off-screen canvas, then snap to grid ---
+  // Border region: top & bottom N rows (border thickness = 20% of height)
+  const borderRowCount = Math.max(3, Math.floor(rows * 0.2));
+  const gs = S.gridSize;
+
+  // Create off-screen canvas the size of the border strip (full body width × borderRows)
+  const bw = bodyEndCol * gs;
+  const bh = borderRowCount * gs;
+
+  const offTop = document.createElement("canvas");
+  offTop.width = bw;
+  offTop.height = bh;
+  const offTopCtx = offTop.getContext("2d");
+  design.draw(offTopCtx, 0, 0, bw, bh);
+
+  const offBot = document.createElement("canvas");
+  offBot.width = bw;
+  offBot.height = bh;
+  const offBotCtx = offBot.getContext("2d");
+  // Mirror vertically for bottom border
+  offBotCtx.translate(0, bh);
+  offBotCtx.scale(1, -1);
+  design.draw(offBotCtx, 0, 0, bw, bh);
+
+  // Sample each grid cell's colour from the off-screen canvas
+  const topData = offTopCtx.getImageData(0, 0, bw, bh).data;
+  const botData = offBotCtx.getImageData(0, 0, bw, bh).data;
+
+  function sampleColor(imgData, cellX, cellY, cw, ch, iw) {
+    // Sample centre pixel of the cell
+    const px = Math.floor(cellX * cw + cw / 2);
+    const py = Math.floor(cellY * ch + ch / 2);
+    const idx = (py * iw + px) * 4;
+    const r = imgData[idx],
+      g = imgData[idx + 1],
+      b = imgData[idx + 2],
+      a = imgData[idx + 3];
+    if (a < 10) return null;
+    return `rgba(${r},${g},${b},${(a / 255).toFixed(2)})`;
+  }
+
+  for (let x = 0; x < bodyEndCol; x++) {
+    for (let dy = 0; dy < borderRowCount; dy++) {
+      // Top border
+      const topY = dy;
+      const col = sampleColor(topData, x, dy, gs, gs, bw);
+      if (col) layers[0].boxes.set(`${x},${topY}`, col);
+
+      // Bottom border (mirror)
+      const botY = rows - 1 - dy;
+      const bCol = sampleColor(botData, x, dy, gs, gs, bw);
+      if (bCol) layers[0].boxes.set(`${x},${botY}`, bCol);
+    }
+  }
+
+  redraw();
+  renderLayers();
+}
+
+// ── Init on load ──────────────────────────────────────────────────────
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initBorderDesignPanel);
+} else {
+  initBorderDesignPanel();
+}

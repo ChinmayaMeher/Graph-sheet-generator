@@ -187,6 +187,41 @@
             </div>
           </section>
 
+          <!-- PREDEFINED BORDER DESIGNS -->
+          <section class="panel" id="borderDesignPanel">
+            <div
+              class="panel-title collapsible-title"
+              id="borderDesignPanelTitle"
+            >
+              <span><i class="fas fa-paint-brush"></i> Border Designs</span>
+              <i
+                class="fas fa-chevron-down panel-chevron"
+                id="borderDesignPanelChevron"
+              ></i>
+            </div>
+            <div class="border-design-body expanded" id="borderDesignBody">
+              <p class="hint">
+                Pick a predefined Sambalpuri/Odisha border style.
+              </p>
+              <div class="border-design-grid" id="borderDesignGrid">
+                <!-- cards injected by JS -->
+              </div>
+              <div class="ctrl-row" style="margin-top: 8px">
+                <label>Body</label>
+                <input type="color" id="bdBodyColor" value="#8e1a4e" />
+                <label>Pallu</label>
+                <input type="color" id="bdPalluColor" value="#1a3a8e" />
+              </div>
+              <button
+                class="action-btn primary full"
+                id="applyBorderDesignBtn"
+                style="margin-top: 8px"
+              >
+                <i class="fas fa-magic"></i> Apply Border Design
+              </button>
+            </div>
+          </section>
+
           <!-- CANVAS SIZE -->
           <section class="panel">
             <div class="panel-title">

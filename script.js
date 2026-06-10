@@ -168,20 +168,70 @@ function getZoneBounds(zone) {
   const cols = Math.floor(canvas.width / S.gridSize);
   const rows = Math.floor(canvas.height / S.gridSize);
   if (zone === "all") return { x0: 0, y0: 0, x1: cols - 1, y1: rows - 1 };
-  if (zone === "pallu")
-    return { x0: Math.floor(cols * 0.7), y0: 0, x1: cols - 1, y1: rows - 1 };
-  if (zone === "border")
-    return { x0: 0, y0: 0, x1: cols - 1, y1: Math.floor(rows * 0.12) };
-  // body = middle section
-  return {
-    x0: 0,
-    y0: Math.floor(rows * 0.12),
-    x1: Math.floor(cols * 0.7) - 1,
-    y1: rows - 1,
-  };
+
+  if (activeTemplate === "saree") {
+    const borderRowCount = Math.floor(rows * 0.12);
+    if (zone === "pallu") {
+      return {
+        x0: Math.floor(cols * 0.7),
+        y0: borderRowCount,
+        x1: cols - 1,
+        y1: rows - 1 - borderRowCount,
+      };
+    }
+    if (zone === "border") {
+      return {
+        x0: 0,
+        y0: 0,
+        x1: cols - 1,
+        y1: Math.max(0, borderRowCount - 1),
+      };
+    }
+    // body = middle section between borders
+    return {
+      x0: 0,
+      y0: borderRowCount,
+      x1: Math.floor(cols * 0.7) - 1,
+      y1: rows - 1 - borderRowCount,
+    };
+  } else {
+    if (zone === "pallu")
+      return { x0: Math.floor(cols * 0.7), y0: 0, x1: cols - 1, y1: rows - 1 };
+    if (zone === "border")
+      return { x0: 0, y0: 0, x1: cols - 1, y1: Math.floor(rows * 0.12) };
+    // body = middle section
+    return {
+      x0: 0,
+      y0: Math.floor(rows * 0.12),
+      x1: Math.floor(cols * 0.7) - 1,
+      y1: rows - 1,
+    };
+  }
 }
 function inZone(gx, gy) {
   if (S.activeZone === "all") return true;
+  if (activeTemplate === "saree") {
+    const cols = Math.floor(canvas.width / S.gridSize);
+    const rows = Math.floor(canvas.height / S.gridSize);
+    const borderRowCount = Math.floor(rows * 0.12);
+    if (S.activeZone === "border") {
+      return gy < borderRowCount || gy >= rows - borderRowCount;
+    }
+    if (S.activeZone === "pallu") {
+      return (
+        gx >= Math.floor(cols * 0.7) &&
+        gy >= borderRowCount &&
+        gy < rows - borderRowCount
+      );
+    }
+    if (S.activeZone === "body") {
+      return (
+        gx < Math.floor(cols * 0.7) &&
+        gy >= borderRowCount &&
+        gy < rows - borderRowCount
+      );
+    }
+  }
   const b = getZoneBounds(S.activeZone);
   return gx >= b.x0 && gx <= b.x1 && gy >= b.y0 && gy <= b.y1;
 }
@@ -786,7 +836,8 @@ function redraw() {
     const palluY = b.y0 * S.gridSize;
     const palluW = (b.x1 - b.x0 + 1) * S.gridSize;
     const palluH = (b.y1 - b.y0 + 1) * S.gridSize;
-    const aspect = S.uploadedPalluImage.naturalWidth / S.uploadedPalluImage.naturalHeight;
+    const aspect =
+      S.uploadedPalluImage.naturalWidth / S.uploadedPalluImage.naturalHeight;
 
     ctx.save();
     // Fit to Pallu height, and tile horizontally inside Pallu width
@@ -1281,31 +1332,43 @@ function applyPatternToRegion() {
   if (S.patternType === "none") return;
   saveState();
   const layer = activeLayer();
-  let x0, y0, x1, y1;
   if (selActive) {
-    x0 = selRect.x;
-    y0 = selRect.y;
-    x1 = x0 + selRect.w;
-    y1 = y0 + selRect.h;
-  } else {
-    const b = getZoneBounds(S.activeZone);
-    x0 = b.x0;
-    y0 = b.y0;
-    x1 = b.x1 + 1;
-    y1 = b.y1 + 1;
-  }
-  for (let x = x0; x < x1; x++)
-    for (let y = y0; y < y1; y++) {
-      const col = patternColor(
-        x,
-        y,
-        S.patternType,
-        S.patColorA,
-        S.patColorB,
-        S.patScale
-      );
-      layer.boxes.set(`${x},${y}`, col);
+    const x0 = selRect.x;
+    const y0 = selRect.y;
+    const x1 = x0 + selRect.w;
+    const y1 = y0 + selRect.h;
+    for (let x = x0; x < x1; x++) {
+      for (let y = y0; y < y1; y++) {
+        const col = patternColor(
+          x,
+          y,
+          S.patternType,
+          S.patColorA,
+          S.patColorB,
+          S.patScale
+        );
+        layer.boxes.set(`${x},${y}`, col);
+      }
     }
+  } else {
+    const cols = Math.floor(canvas.width / S.gridSize);
+    const rows = Math.floor(canvas.height / S.gridSize);
+    for (let x = 0; x < cols; x++) {
+      for (let y = 0; y < rows; y++) {
+        if (inZone(x, y)) {
+          const col = patternColor(
+            x,
+            y,
+            S.patternType,
+            S.patColorA,
+            S.patColorB,
+            S.patScale
+          );
+          layer.boxes.set(`${x},${y}`, col);
+        }
+      }
+    }
+  }
   redraw();
 }
 

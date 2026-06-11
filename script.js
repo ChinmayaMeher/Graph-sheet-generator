@@ -884,7 +884,13 @@ function redraw() {
         // Bottom Border
         if (activeTemplate === "saree") {
           for (let tx = 0; tx < canvas.width; tx += tileW) {
-            ctx.drawImage(S.uploadedBorderImage, tx, canvas.height - tileH, tileW, tileH);
+            ctx.drawImage(
+              S.uploadedBorderImage,
+              tx,
+              canvas.height - tileH,
+              tileW,
+              tileH
+            );
           }
         }
       } else {
@@ -1416,8 +1422,36 @@ function patternColor(gx, gy, type, colA, colB, scale) {
 function applyPatternToRegion() {
   if (S.patternType === "none") return;
   saveState();
-  const layer = activeLayer();
-  if (selActive) {
+  
+  if (!selActive) {
+    // Full region fill: generate on Background layer
+    layers[0].name = "Background";
+    if (layers.length === 1) {
+      layers.push({ name: "Drawing Layer", visible: true, boxes: new Map() });
+    }
+    const bgLayer = layers[0];
+    const cols = Math.floor(canvas.width / S.gridSize);
+    const rows = Math.floor(canvas.height / S.gridSize);
+    for (let x = 0; x < cols; x++) {
+      for (let y = 0; y < rows; y++) {
+        if (inZone(x, y)) {
+          const col = patternColor(
+            x,
+            y,
+            S.patternType,
+            S.patColorA,
+            S.patColorB,
+            S.patScale
+          );
+          bgLayer.boxes.set(`${x},${y}`, col);
+        }
+      }
+    }
+    activeLayerIndex = 1;
+    renderLayers();
+  } else {
+    // Selection fill: draw normally on active layer
+    const layer = activeLayer();
     const x0 = selRect.x;
     const y0 = selRect.y;
     const x1 = x0 + selRect.w;
@@ -1435,24 +1469,6 @@ function applyPatternToRegion() {
         layer.boxes.set(`${x},${y}`, col);
       }
     }
-  } else {
-    const cols = Math.floor(canvas.width / S.gridSize);
-    const rows = Math.floor(canvas.height / S.gridSize);
-    for (let x = 0; x < cols; x++) {
-      for (let y = 0; y < rows; y++) {
-        if (inZone(x, y)) {
-          const col = patternColor(
-            x,
-            y,
-            S.patternType,
-            S.patColorA,
-            S.patColorB,
-            S.patScale
-          );
-          layer.boxes.set(`${x},${y}`, col);
-        }
-      }
-    }
   }
   redraw();
 }
@@ -1460,9 +1476,16 @@ function applyPatternToRegion() {
 function fillAllWithPattern() {
   if (S.patternType === "none") return;
   saveState();
+  
+  // Full canvas fill: generate on Background layer
+  layers[0].name = "Background";
+  if (layers.length === 1) {
+    layers.push({ name: "Drawing Layer", visible: true, boxes: new Map() });
+  }
+  const bgLayer = layers[0];
+
   const cols = Math.floor(canvas.width / S.gridSize),
     rows = Math.floor(canvas.height / S.gridSize);
-  const layer = activeLayer();
   for (let x = 0; x < cols; x++)
     for (let y = 0; y < rows; y++) {
       const col = patternColor(
@@ -1473,8 +1496,11 @@ function fillAllWithPattern() {
         S.patColorB,
         S.patScale
       );
-      layer.boxes.set(`${x},${y}`, col);
+      bgLayer.boxes.set(`${x},${y}`, col);
     }
+    
+  activeLayerIndex = 1;
+  renderLayers();
   redraw();
 }
 
@@ -2134,8 +2160,20 @@ function applyBorderTypeToCanvas() {
     }
   }
 
+  // Set up layers to protect the background from being erased by accident
+  layers[0].name = "Background";
+  if (layers.length === 1) {
+    layers.push({
+      name: "Drawing Layer",
+      visible: true,
+      boxes: new Map(),
+    });
+  }
+  activeLayerIndex = 1;
+
   redraw();
   renderLayers();
+  updateStats();
 }
 
 // ── Wire up panel ────────────────────────────────────────────────────
@@ -2871,19 +2909,18 @@ function applyBorderDesign() {
     for (let y = 0; y < rows; y++)
       layers[0].boxes.set(`${x},${y}`, toRgba(bodyCol));
 
-  // --- Fill pallu with checkerboard ---
-  for (let x = palluStartCol; x < cols; x++)
-    for (let y = 0; y < rows; y++) {
-      const col = patternColor(
-        x,
-        y,
-        "checkerboard",
-        palluCol,
-        _darken(palluCol, 30),
-        2
-      );
-      layers[0].boxes.set(`${x},${y}`, col);
-    }
+  function sampleColor(imgData, cellX, cellY, cw, ch, iw) {
+    // Sample centre pixel of the cell
+    const px = Math.floor(cellX * cw + cw / 2);
+    const py = Math.floor(cellY * ch + ch / 2);
+    const idx = (py * iw + px) * 4;
+    const r = imgData[idx],
+      g = imgData[idx + 1],
+      b = imgData[idx + 2],
+      a = imgData[idx + 3];
+    if (a < 10) return null;
+    return `rgba(${r},${g},${b},${(a / 255).toFixed(2)})`;
+  }
 
   // --- Draw border design using off-screen canvas, then snap to grid ---
   // Border region: top & bottom N rows (border thickness = 20% of height)
@@ -2913,19 +2950,6 @@ function applyBorderDesign() {
   const topData = offTopCtx.getImageData(0, 0, bw, bh).data;
   const botData = offBotCtx.getImageData(0, 0, bw, bh).data;
 
-  function sampleColor(imgData, cellX, cellY, cw, ch, iw) {
-    // Sample centre pixel of the cell
-    const px = Math.floor(cellX * cw + cw / 2);
-    const py = Math.floor(cellY * ch + ch / 2);
-    const idx = (py * iw + px) * 4;
-    const r = imgData[idx],
-      g = imgData[idx + 1],
-      b = imgData[idx + 2],
-      a = imgData[idx + 3];
-    if (a < 10) return null;
-    return `rgba(${r},${g},${b},${(a / 255).toFixed(2)})`;
-  }
-
   for (let x = 0; x < bodyEndCol; x++) {
     for (let dy = 0; dy < borderRowCount; dy++) {
       // Top border
@@ -2940,8 +2964,49 @@ function applyBorderDesign() {
     }
   }
 
+  // --- Fill pallu with vertical border bands ---
+  const pw = (cols - palluStartCol) * gs;
+  const ph = rows * gs;
+  
+  const offPallu = document.createElement("canvas");
+  offPallu.width = pw;
+  offPallu.height = ph;
+  const offPalluCtx = offPallu.getContext("2d");
+  
+  // Base pallu color
+  offPalluCtx.fillStyle = palluCol;
+  offPalluCtx.fillRect(0, 0, pw, ph);
+
+  // Rotate canvas 90 degrees to draw the horizontal border vertically
+  offPalluCtx.translate(pw, 0);
+  offPalluCtx.rotate(Math.PI / 2);
+  
+  // Draw the design (width becomes ph, height becomes pw)
+  design.draw(offPalluCtx, 0, 0, ph, pw);
+
+  const palluData = offPalluCtx.getImageData(0, 0, pw, ph).data;
+  
+  for (let x = palluStartCol; x < cols; x++) {
+    for (let y = 0; y < rows; y++) {
+      const col = sampleColor(palluData, x - palluStartCol, y, gs, gs, pw);
+      if (col) layers[0].boxes.set(`${x},${y}`, col);
+    }
+  }
+
+  // Set up layers to protect the background from being erased by accident
+  layers[0].name = "Background";
+  if (layers.length === 1) {
+    layers.push({
+      name: "Drawing Layer",
+      visible: true,
+      boxes: new Map(),
+    });
+  }
+  activeLayerIndex = 1;
+
   redraw();
   renderLayers();
+  updateStats();
 }
 
 // Map to cache high-quality downscaled images

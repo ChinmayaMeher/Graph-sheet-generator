@@ -990,7 +990,7 @@ function redraw() {
     ctx.restore();
   }
 
-  // Grid lines (cross-grid: horizontal + vertical + both diagonals per cell)
+  // Grid lines (horizontal + vertical)
   if (S.showGrid) {
     ctx.strokeStyle = S.gridColor;
     ctx.lineWidth = 0.5;
@@ -1005,22 +1005,6 @@ function redraw() {
     for (let x = 0; x <= canvas.width; x += S.gridSize) {
       ctx.moveTo(x, 0);
       ctx.lineTo(x, canvas.height);
-    }
-
-    // Diagonal lines inside each cell (\ direction)
-    const cols = Math.floor(canvas.width / S.gridSize);
-    const rows = Math.floor(canvas.height / S.gridSize);
-    for (let row = 0; row < rows; row++) {
-      for (let col = 0; col < cols; col++) {
-        const cx = col * S.gridSize;
-        const cy = row * S.gridSize;
-        // top-left to bottom-right
-        ctx.moveTo(cx, cy);
-        ctx.lineTo(cx + S.gridSize, cy + S.gridSize);
-        // top-right to bottom-left
-        ctx.moveTo(cx + S.gridSize, cy);
-        ctx.lineTo(cx, cy + S.gridSize);
-      }
     }
 
     ctx.stroke();

@@ -428,21 +428,48 @@ function bindControls() {
 
   // Border layout settings
   const layoutEl = document.getElementById("borderImageLayout");
-  if (layoutEl) layoutEl.onchange = (e) => { S.borderImageLayout = e.target.value; redraw(); };
+  if (layoutEl)
+    layoutEl.onchange = (e) => {
+      S.borderImageLayout = e.target.value;
+      redraw();
+    };
   const stripeHEl = document.getElementById("borderStripeHeight");
-  if (stripeHEl) stripeHEl.oninput = (e) => { S.borderStripeHeight = parseInt(e.target.value) || 1; redraw(); };
+  if (stripeHEl)
+    stripeHEl.oninput = (e) => {
+      S.borderStripeHeight = parseInt(e.target.value) || 1;
+      redraw();
+    };
   const gapHEl = document.getElementById("borderGapHeight");
-  if (gapHEl) gapHEl.oninput = (e) => { S.borderGapHeight = parseInt(e.target.value) || 0; redraw(); };
+  if (gapHEl)
+    gapHEl.oninput = (e) => {
+      S.borderGapHeight = parseInt(e.target.value) || 0;
+      redraw();
+    };
 
   // Clear Buttons
   const clearBorderBtn = document.getElementById("clearBorderImageBtn");
-  if (clearBorderBtn) clearBorderBtn.onclick = () => { S.uploadedBorderImage = null; clearBorderBtn.style.display = "none"; redraw(); };
-  
+  if (clearBorderBtn)
+    clearBorderBtn.onclick = () => {
+      S.uploadedBorderImage = null;
+      clearBorderBtn.style.display = "none";
+      redraw();
+    };
+
   const clearPalluBtn = document.getElementById("clearPalluImageBtn");
-  if (clearPalluBtn) clearPalluBtn.onclick = () => { S.uploadedPalluImage = null; clearPalluBtn.style.display = "none"; redraw(); };
+  if (clearPalluBtn)
+    clearPalluBtn.onclick = () => {
+      S.uploadedPalluImage = null;
+      clearPalluBtn.style.display = "none";
+      redraw();
+    };
 
   const clearPatternBtn = document.getElementById("clearPatternImageBtn");
-  if (clearPatternBtn) clearPatternBtn.onclick = () => { S.uploadedPatternImage = null; clearPatternBtn.style.display = "none"; redraw(); };
+  if (clearPatternBtn)
+    clearPatternBtn.onclick = () => {
+      S.uploadedPatternImage = null;
+      clearPatternBtn.style.display = "none";
+      redraw();
+    };
 
   // Image placement control bindings
   document.getElementById("placementZone").onchange = (e) => {
@@ -825,6 +852,9 @@ function redraw() {
       S.uploadedBorderImage.naturalWidth / S.uploadedBorderImage.naturalHeight;
 
     ctx.save();
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+
     if (activeTemplate === "border") {
       const tileH = canvas.height;
       const tileW = tileH * aspect;
@@ -846,6 +876,7 @@ function redraw() {
         const borderHeight = borderRowCount * S.gridSize;
         const tileH = borderHeight;
         const tileW = tileH * aspect;
+
         // Top Border
         for (let tx = 0; tx < canvas.width; tx += tileW) {
           ctx.drawImage(S.uploadedBorderImage, tx, 0, tileW, tileH);
@@ -853,13 +884,7 @@ function redraw() {
         // Bottom Border
         if (activeTemplate === "saree") {
           for (let tx = 0; tx < canvas.width; tx += tileW) {
-            ctx.drawImage(
-              S.uploadedBorderImage,
-              tx,
-              canvas.height - tileH,
-              tileW,
-              tileH
-            );
+            ctx.drawImage(S.uploadedBorderImage, tx, canvas.height - tileH, tileW, tileH);
           }
         }
       } else {
@@ -897,7 +922,8 @@ function redraw() {
       S.uploadedPalluImage.naturalWidth / S.uploadedPalluImage.naturalHeight;
 
     ctx.save();
-    // Fit to Pallu height, and tile horizontally inside Pallu width
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
     const tileH = palluH;
     const tileW = tileH * aspect;
     for (let tx = palluX; tx < palluX + palluW; tx += tileW) {
@@ -944,6 +970,8 @@ function redraw() {
     }
 
     ctx.save();
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
     for (let gx = x0; gx <= x1; gx++) {
       for (let gy = y0; gy <= y1; gy++) {
         const cellX = gx * S.gridSize;
@@ -2914,6 +2942,61 @@ function applyBorderDesign() {
 
   redraw();
   renderLayers();
+}
+
+// Map to cache high-quality downscaled images
+const scaledImageCache = new Map();
+
+function getHighQualityDownscaledImage(img, targetW, targetH) {
+  if (!img || targetW <= 0 || targetH <= 0) return img;
+
+  // Use a cache key based on image source and target dimensions
+  const cacheKey =
+    img.src + "_" + Math.round(targetW) + "x" + Math.round(targetH);
+  if (scaledImageCache.has(cacheKey)) {
+    return scaledImageCache.get(cacheKey);
+  }
+
+  let curW = img.naturalWidth;
+  let curH = img.naturalHeight;
+
+  // If not downscaling by more than 50%, regular browser scaling is fine
+  if (targetW >= curW * 0.5 && targetH >= curH * 0.5) return img;
+
+  let source = img;
+  const cvs = document.createElement("canvas");
+  const ctx = cvs.getContext("2d");
+
+  // Step down by halves
+  while (curW * 0.5 > targetW && curH * 0.5 > targetH) {
+    curW = Math.floor(curW * 0.5);
+    curH = Math.floor(curH * 0.5);
+    cvs.width = curW;
+    cvs.height = curH;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(source, 0, 0, curW, curH);
+    source = cvs; // canvas becomes source for next step
+  }
+
+  // Final exact resize to target dimensions
+  const finalCvs = document.createElement("canvas");
+  finalCvs.width = targetW;
+  finalCvs.height = targetH;
+  const finalCtx = finalCvs.getContext("2d");
+  finalCtx.imageSmoothingEnabled = true;
+  finalCtx.imageSmoothingQuality = "high";
+  finalCtx.drawImage(source, 0, 0, targetW, targetH);
+
+  scaledImageCache.set(cacheKey, finalCvs);
+
+  // Keep cache small
+  if (scaledImageCache.size > 15) {
+    const firstKey = scaledImageCache.keys().next().value;
+    scaledImageCache.delete(firstKey);
+  }
+
+  return finalCvs;
 }
 
 // ── Init on load ──────────────────────────────────────────────────────

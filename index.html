@@ -441,20 +441,51 @@
               style="flex-direction: column; align-items: stretch; gap: 4px"
             >
               <label style="font-weight: 600">Upload Border Image</label>
-              <label
-                class="upload-area"
-                for="borderImageUpload"
-                style="margin-top: 4px"
-              >
-                <i class="fas fa-border-all"></i>
-                <span>Choose Border Image</span>
-                <input
-                  type="file"
-                  id="borderImageUpload"
-                  accept="image/*"
-                  style="display: none"
-                />
-              </label>
+              <div style="display: flex; gap: 6px; width: 100%">
+                <label
+                  class="upload-area"
+                  for="borderImageUpload"
+                  style="margin-top: 4px; flex: 1"
+                >
+                  <i class="fas fa-border-all"></i>
+                  <span>Choose Border Image</span>
+                  <input
+                    type="file"
+                    id="borderImageUpload"
+                    accept="image/*"
+                    style="display: none"
+                  />
+                </label>
+                <button
+                  class="action-btn danger mini"
+                  id="clearBorderImageBtn"
+                  style="align-self: stretch; margin-top: 4px; display: none;"
+                  title="Remove border image"
+                >
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </div>
+            </div>
+            <div class="ctrl-row" style="margin-top: 6px">
+              <label>Border Layout</label>
+              <select id="borderImageLayout">
+                <option value="match" selected>Match Border Type</option>
+                <option value="plain">Plain (Full Border)</option>
+                <option value="single">Single Stripe</option>
+                <option value="double">Double Stripes</option>
+                <option value="triple">Triple Stripes</option>
+                <option value="four">Four Stripes</option>
+              </select>
+            </div>
+            <div class="ctrl-row-group" id="borderImageSettings" style="margin-top: 4px;">
+              <div class="ctrl-row compact">
+                <label>Stripe Cells</label>
+                <input type="number" id="borderStripeHeight" value="3" min="1" max="20" />
+              </div>
+              <div class="ctrl-row compact">
+                <label>Gap Cells</label>
+                <input type="number" id="borderGapHeight" value="2" min="0" max="20" />
+              </div>
             </div>
             <div
               class="ctrl-row"
@@ -466,20 +497,30 @@
               "
             >
               <label style="font-weight: 600">Upload Pallu Image</label>
-              <label
-                class="upload-area"
-                for="palluImageUpload"
-                style="margin-top: 4px"
-              >
-                <i class="fas fa-image"></i>
-                <span>Choose Pallu Image</span>
-                <input
-                  type="file"
-                  id="palluImageUpload"
-                  accept="image/*"
-                  style="display: none"
-                />
-              </label>
+              <div style="display: flex; gap: 6px; width: 100%">
+                <label
+                  class="upload-area"
+                  for="palluImageUpload"
+                  style="margin-top: 4px; flex: 1"
+                >
+                  <i class="fas fa-image"></i>
+                  <span>Choose Pallu Image</span>
+                  <input
+                    type="file"
+                    id="palluImageUpload"
+                    accept="image/*"
+                    style="display: none"
+                  />
+                </label>
+                <button
+                  class="action-btn danger mini"
+                  id="clearPalluImageBtn"
+                  style="align-self: stretch; margin-top: 4px; display: none;"
+                  title="Remove pallu image"
+                >
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </div>
             </div>
             <div
               class="ctrl-row"
@@ -491,20 +532,30 @@
               "
             >
               <label style="font-weight: 600">Upload Pattern Image</label>
-              <label
-                class="upload-area"
-                for="patternImageUpload"
-                style="margin-top: 4px"
-              >
-                <i class="fas fa-th-large"></i>
-                <span>Choose Pattern Image</span>
-                <input
-                  type="file"
-                  id="patternImageUpload"
-                  accept="image/*"
-                  style="display: none"
-                />
-              </label>
+              <div style="display: flex; gap: 6px; width: 100%">
+                <label
+                  class="upload-area"
+                  for="patternImageUpload"
+                  style="margin-top: 4px; flex: 1"
+                >
+                  <i class="fas fa-th-large"></i>
+                  <span>Choose Pattern Image</span>
+                  <input
+                    type="file"
+                    id="patternImageUpload"
+                    accept="image/*"
+                    style="display: none"
+                  />
+                </label>
+                <button
+                  class="action-btn danger mini"
+                  id="clearPatternImageBtn"
+                  style="align-self: stretch; margin-top: 4px; display: none;"
+                  title="Remove pattern image"
+                >
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </div>
             </div>
             <div class="ctrl-row" style="margin-top: 10px">
               <label>Pattern Occupancy</label>

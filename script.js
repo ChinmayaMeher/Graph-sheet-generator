@@ -51,6 +51,9 @@ let S = {
   uploadedPatternImage: null,
   uploadedPalluImage: null,
   patternOccupancy: 1.0,
+  borderImageLayout: "match",
+  borderStripeHeight: 3,
+  borderGapHeight: 2,
 };
 
 // Stores smoothly-placed images: drawn on canvas with grid on top
@@ -372,6 +375,8 @@ function bindControls() {
         img.src = ev.target.result;
         img.onload = () => {
           S.uploadedBorderImage = img;
+          const clearBtn = document.getElementById("clearBorderImageBtn");
+          if (clearBtn) clearBtn.style.display = "block";
           redraw();
         };
       };
@@ -388,6 +393,8 @@ function bindControls() {
         img.src = ev.target.result;
         img.onload = () => {
           S.uploadedPalluImage = img;
+          const clearBtn = document.getElementById("clearPalluImageBtn");
+          if (clearBtn) clearBtn.style.display = "block";
           redraw();
         };
       };
@@ -404,6 +411,8 @@ function bindControls() {
         img.src = ev.target.result;
         img.onload = () => {
           S.uploadedPatternImage = img;
+          const clearBtn = document.getElementById("clearPatternImageBtn");
+          if (clearBtn) clearBtn.style.display = "block";
           redraw();
         };
       };
@@ -416,6 +425,24 @@ function bindControls() {
     S.patternOccupancy = parseFloat(e.target.value) || 1.0;
     redraw();
   };
+
+  // Border layout settings
+  const layoutEl = document.getElementById("borderImageLayout");
+  if (layoutEl) layoutEl.onchange = (e) => { S.borderImageLayout = e.target.value; redraw(); };
+  const stripeHEl = document.getElementById("borderStripeHeight");
+  if (stripeHEl) stripeHEl.oninput = (e) => { S.borderStripeHeight = parseInt(e.target.value) || 1; redraw(); };
+  const gapHEl = document.getElementById("borderGapHeight");
+  if (gapHEl) gapHEl.oninput = (e) => { S.borderGapHeight = parseInt(e.target.value) || 0; redraw(); };
+
+  // Clear Buttons
+  const clearBorderBtn = document.getElementById("clearBorderImageBtn");
+  if (clearBorderBtn) clearBorderBtn.onclick = () => { S.uploadedBorderImage = null; clearBorderBtn.style.display = "none"; redraw(); };
+  
+  const clearPalluBtn = document.getElementById("clearPalluImageBtn");
+  if (clearPalluBtn) clearPalluBtn.onclick = () => { S.uploadedPalluImage = null; clearPalluBtn.style.display = "none"; redraw(); };
+
+  const clearPatternBtn = document.getElementById("clearPatternImageBtn");
+  if (clearPatternBtn) clearPatternBtn.onclick = () => { S.uploadedPatternImage = null; clearPatternBtn.style.display = "none"; redraw(); };
 
   // Image placement control bindings
   document.getElementById("placementZone").onchange = (e) => {
@@ -794,8 +821,6 @@ function redraw() {
   if (S.uploadedBorderImage) {
     const cols = Math.floor(canvas.width / S.gridSize);
     const rows = Math.floor(canvas.height / S.gridSize);
-    const borderRowCount = Math.max(1, Math.floor(rows * 0.12));
-    const borderHeight = borderRowCount * S.gridSize;
     const aspect =
       S.uploadedBorderImage.naturalWidth / S.uploadedBorderImage.naturalHeight;
 
@@ -807,22 +832,54 @@ function redraw() {
         ctx.drawImage(S.uploadedBorderImage, tx, 0, tileW, tileH);
       }
     } else {
-      const tileH = borderHeight;
-      const tileW = tileH * aspect;
-      // Top Border
-      for (let tx = 0; tx < canvas.width; tx += tileW) {
-        ctx.drawImage(S.uploadedBorderImage, tx, 0, tileW, tileH);
-      }
-      // Bottom Border
-      if (activeTemplate === "saree") {
+      let layout = S.borderImageLayout || "match";
+      if (layout === "match") layout = activeBorderType; // 'plain', 'single', 'double', 'triple', 'four'
+
+      let stripesCount = 0;
+      if (layout === "single") stripesCount = 1;
+      else if (layout === "double") stripesCount = 2;
+      else if (layout === "triple") stripesCount = 3;
+      else if (layout === "four") stripesCount = 4;
+
+      if (stripesCount === 0) {
+        const borderRowCount = Math.max(1, Math.floor(rows * 0.12));
+        const borderHeight = borderRowCount * S.gridSize;
+        const tileH = borderHeight;
+        const tileW = tileH * aspect;
+        // Top Border
         for (let tx = 0; tx < canvas.width; tx += tileW) {
-          ctx.drawImage(
-            S.uploadedBorderImage,
-            tx,
-            canvas.height - tileH,
-            tileW,
-            tileH
-          );
+          ctx.drawImage(S.uploadedBorderImage, tx, 0, tileW, tileH);
+        }
+        // Bottom Border
+        if (activeTemplate === "saree") {
+          for (let tx = 0; tx < canvas.width; tx += tileW) {
+            ctx.drawImage(
+              S.uploadedBorderImage,
+              tx,
+              canvas.height - tileH,
+              tileW,
+              tileH
+            );
+          }
+        }
+      } else {
+        const stripeH = (S.borderStripeHeight || 3) * S.gridSize;
+        const gapH = (S.borderGapHeight || 0) * S.gridSize;
+        const tileW = stripeH * aspect;
+
+        for (let i = 0; i < stripesCount; i++) {
+          // Top Border Stripe i
+          const topY = i * (stripeH + gapH);
+          for (let tx = 0; tx < canvas.width; tx += tileW) {
+            ctx.drawImage(S.uploadedBorderImage, tx, topY, tileW, stripeH);
+          }
+          // Bottom Border Stripe i (mirrored / stacked going inwards)
+          if (activeTemplate === "saree") {
+            const botY = canvas.height - (i + 1) * stripeH - i * gapH;
+            for (let tx = 0; tx < canvas.width; tx += tileW) {
+              ctx.drawImage(S.uploadedBorderImage, tx, botY, tileW, stripeH);
+            }
+          }
         }
       }
     }
@@ -2076,6 +2133,7 @@ function initBorderTypePanel() {
       activeBorderType = card.dataset.border;
       renderBorderColorPickers(activeBorderType);
       drawAllBorderThumbs();
+      redraw();
     });
   });
 

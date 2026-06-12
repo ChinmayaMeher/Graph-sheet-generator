@@ -9,7 +9,13 @@
 :root {
   --sidebar-w: 300px;
   --toolbar-h: 52px;
-  --bg: radial-gradient(circle at 15% 50%, rgba(61, 31, 110, 0.6), transparent 50%), radial-gradient(circle at 85% 30%, rgba(106, 43, 138, 0.6), transparent 50%), #1a1625;
+  --bg: radial-gradient(
+      circle at 15% 50%,
+      rgba(61, 31, 110, 0.6),
+      transparent 50%
+    ),
+    radial-gradient(circle at 85% 30%, rgba(106, 43, 138, 0.6), transparent 50%),
+    #1a1625;
   --surface: rgba(255, 255, 255, 0.05);
   --surface2: rgba(255, 255, 255, 0.1);
   --surface3: rgba(255, 255, 255, 0.15);
@@ -202,18 +208,24 @@ body {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-size: 10px;
   color: var(--text2);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 .tmpl-card:hover {
   border-color: var(--accent);
   color: var(--text);
   transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3),
+    0 4px 6px -2px rgba(0, 0, 0, 0.15);
   background: rgba(255, 255, 255, 0.06);
 }
 .tmpl-card.active {
   border-color: var(--accent);
-  background: linear-gradient(135deg, rgba(224, 98, 158, 0.15) 0%, rgba(106, 43, 138, 0.15) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(224, 98, 158, 0.15) 0%,
+    rgba(106, 43, 138, 0.15) 100%
+  );
   color: var(--accent);
   box-shadow: 0 0 12px rgba(224, 98, 158, 0.4);
 }
@@ -1434,7 +1446,11 @@ body {
 }
 .border-type-card.active {
   border-color: var(--accent);
-  background: linear-gradient(135deg, rgba(224, 98, 158, 0.15) 0%, rgba(245, 166, 35, 0.15) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(224, 98, 158, 0.15) 0%,
+    rgba(245, 166, 35, 0.15) 100%
+  );
   box-shadow: 0 0 12px rgba(245, 166, 35, 0.3);
 }
 .border-type-card span {
@@ -1528,7 +1544,11 @@ body {
 }
 .border-design-card.active {
   border-color: var(--accent);
-  background: linear-gradient(135deg, rgba(224, 98, 158, 0.15) 0%, rgba(106, 43, 138, 0.15) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(224, 98, 158, 0.15) 0%,
+    rgba(106, 43, 138, 0.15) 100%
+  );
   box-shadow: 0 0 12px rgba(224, 98, 158, 0.4);
 }
 .border-design-card canvas {
@@ -1544,4 +1564,4 @@ body {
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-}
+}

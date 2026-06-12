@@ -1406,7 +1406,7 @@ function patternColor(gx, gy, type, colA, colB, scale) {
 function applyPatternToRegion() {
   if (S.patternType === "none") return;
   saveState();
-  
+
   if (!selActive) {
     // Full region fill: generate on Background layer
     layers[0].name = "Background";
@@ -1460,7 +1460,7 @@ function applyPatternToRegion() {
 function fillAllWithPattern() {
   if (S.patternType === "none") return;
   saveState();
-  
+
   // Full canvas fill: generate on Background layer
   layers[0].name = "Background";
   if (layers.length === 1) {
@@ -1482,7 +1482,7 @@ function fillAllWithPattern() {
       );
       bgLayer.boxes.set(`${x},${y}`, col);
     }
-    
+
   activeLayerIndex = 1;
   renderLayers();
   redraw();
@@ -2951,12 +2951,12 @@ function applyBorderDesign() {
   // --- Fill pallu with vertical border bands ---
   const pw = (cols - palluStartCol) * gs;
   const ph = rows * gs;
-  
+
   const offPallu = document.createElement("canvas");
   offPallu.width = pw;
   offPallu.height = ph;
   const offPalluCtx = offPallu.getContext("2d");
-  
+
   // Base pallu color
   offPalluCtx.fillStyle = palluCol;
   offPalluCtx.fillRect(0, 0, pw, ph);
@@ -2964,12 +2964,12 @@ function applyBorderDesign() {
   // Rotate canvas 90 degrees to draw the horizontal border vertically
   offPalluCtx.translate(pw, 0);
   offPalluCtx.rotate(Math.PI / 2);
-  
+
   // Draw the design (width becomes ph, height becomes pw)
   design.draw(offPalluCtx, 0, 0, ph, pw);
 
   const palluData = offPalluCtx.getImageData(0, 0, pw, ph).data;
-  
+
   for (let x = palluStartCol; x < cols; x++) {
     for (let y = 0; y < rows; y++) {
       const col = sampleColor(palluData, x - palluStartCol, y, gs, gs, pw);

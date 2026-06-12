@@ -9,22 +9,23 @@
 :root {
   --sidebar-w: 300px;
   --toolbar-h: 52px;
-  --bg: #1a1625;
-  --surface: #231f35;
-  --surface2: #2e2845;
-  --surface3: #3a3358;
+  --bg: radial-gradient(circle at 15% 50%, rgba(61, 31, 110, 0.6), transparent 50%), radial-gradient(circle at 85% 30%, rgba(106, 43, 138, 0.6), transparent 50%), #1a1625;
+  --surface: rgba(255, 255, 255, 0.05);
+  --surface2: rgba(255, 255, 255, 0.1);
+  --surface3: rgba(255, 255, 255, 0.15);
   --accent: #e0629e;
   --accent2: #f5a623;
   --text: #f0eaf7;
   --text2: #a899c0;
-  --border: rgba(255, 255, 255, 0.08);
-  --radius: 8px;
-  --radius-sm: 5px;
-  --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  --border: rgba(255, 255, 255, 0.12);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 }
 
 body {
   background: var(--bg);
+  background-attachment: fixed;
   color: var(--text);
   font-family: "DM Sans", sans-serif;
   font-size: 13px;
@@ -44,6 +45,8 @@ body {
   width: var(--sidebar-w);
   min-width: var(--sidebar-w);
   background: var(--surface);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   display: flex;
   flex-direction: column;
   border-right: 1px solid var(--border);
@@ -520,7 +523,7 @@ body {
   flex-direction: column;
   overflow: hidden;
   position: relative;
-  background: var(--bg);
+  background: transparent;
 }
 
 /* ===== TOOLBAR ===== */
@@ -531,6 +534,8 @@ body {
   gap: 8px;
   padding: 0 16px;
   background: var(--surface);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }

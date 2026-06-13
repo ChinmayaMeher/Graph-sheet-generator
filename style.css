@@ -283,29 +283,9 @@ body {
 .tmpl-preview {
   width: 100%;
   aspect-ratio: 1.2;
-  border-radius: 3px;
-}
-.saree-preview {
-  background: repeating-linear-gradient(
-    90deg,
-    #8e1a4e 0%,
-    #8e1a4e 40%,
-    #c0392b 40%,
-    #c0392b 60%,
-    #8e1a4e 60%,
-    #8e1a4e 100%
-  );
-}
-.stall-preview {
-  background: repeating-linear-gradient(45deg, #1a3c6e 0 5px, #2980b9 5px 10px);
-}
-.border-preview {
-  background: repeating-linear-gradient(0deg, #2ecc71 0 4px, #1a1a1a 4px 10px);
-}
-.motif-preview {
-  background: radial-gradient(circle at 50% 50%, #e74c3c 30%, transparent 30%) 0
-      0/20px 20px,
-    var(--surface3);
+  border-radius: 4px;
+  object-fit: cover;
+  display: block;
 }
 
 /* ===== PATTERN BTNS ===== */

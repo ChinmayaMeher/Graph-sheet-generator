@@ -1,4 +1,4 @@
-"use strict";
+"use strict"; // Strict mode enabled
 
 /* =====================================================================
    SAREE & STALL DESIGN STUDIO — script.js

@@ -43,7 +43,7 @@ body {
   background-attachment: fixed;
   color: var(--text);
   font-family: "DM Sans", system-ui, -apple-system, sans-serif;
-  font-size: 14px;
+  font-size: 14px; /* Base size */
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

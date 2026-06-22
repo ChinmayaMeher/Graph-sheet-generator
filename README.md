@@ -10,7 +10,7 @@ A web-based design studio application for creating beautiful and intricate Samba
 
 ## Tech Stack
 - HTML5
-- CSS3 (Vanilla)
+- CSS3 (Vanilla / Custom Properties)
 - Vanilla JavaScript
 
 ## Usage

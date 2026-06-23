@@ -999,7 +999,7 @@ function redraw() {
   // Grid lines (horizontal + vertical)
   if (S.showGrid) {
     ctx.strokeStyle = S.gridColor;
-    ctx.lineWidth = 0.5;
+    ctx.lineWidth = S.gridLineWidth || 1;
     ctx.beginPath();
 
     // Horizontal lines

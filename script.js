@@ -23,6 +23,7 @@ let S = {
   gridSize: 20,
   gridColor: "#cccccc",
   gridLineWidth: 1,
+  gridOpacity: 1,
   superboxBorderColor: "#555555",
   bgColor: "#ffffff",
   showGrid: true,

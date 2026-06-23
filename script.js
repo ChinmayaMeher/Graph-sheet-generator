@@ -1003,6 +1003,8 @@ function redraw() {
 
   // Grid lines (horizontal + vertical)
   if (S.showGrid) {
+    ctx.save();
+    ctx.globalAlpha = S.gridOpacity || 1;
     ctx.strokeStyle = S.gridColor;
     ctx.lineWidth = S.gridLineWidth || 1;
     ctx.beginPath();
@@ -1033,6 +1035,7 @@ function redraw() {
       ctx.lineTo(canvas.width, y);
     }
     ctx.stroke();
+    ctx.restore();
   }
 
   // Image overlay is rendered as HTML element – no canvas drawing needed here

@@ -281,6 +281,10 @@ function bindControls() {
     S.gridColor = v;
     redraw();
   });
+  bind("gridLineWidth", (v) => {
+    S.gridLineWidth = +v;
+    redraw();
+  });
   bind("superboxBorderColor", (v) => {
     S.superboxBorderColor = v;
     redraw();

@@ -7,8 +7,11 @@
 }
 
 :root {
+  /* Layout */
   --sidebar-w: 320px;
   --toolbar-h: 56px;
+  
+  /* Colors */
   --bg-color: #0f172a;
   --bg-image: radial-gradient(
       circle at 0% 0%,

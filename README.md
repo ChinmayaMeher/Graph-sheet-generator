@@ -18,3 +18,6 @@ Open `index.html` in your web browser to start using the design studio. No build
 
 ## Contributing
 Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+This project is open source and available under the [MIT License](LICENSE).

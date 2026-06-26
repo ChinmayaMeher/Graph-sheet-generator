@@ -15,3 +15,6 @@ A web-based design studio application for creating beautiful and intricate Samba
 
 ## Usage
 Open `index.html` in your web browser to start using the design studio. No build process required.
+
+## Contributing
+Contributions are welcome! Please feel free to submit a Pull Request.

@@ -15,6 +15,10 @@ const prevCanvas = document.getElementById("previewCanvas");
 const prevCtx = prevCanvas.getContext("2d");
 
 // ── STATE ────────────────────────────────────────────────────────────
+/**
+ * Global application state
+ * Manages all configuration options and active tool settings
+ */
 let activeTemplate = "saree";
 
 let S = {

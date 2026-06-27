@@ -6,6 +6,7 @@ A web-based design studio application for creating beautiful and intricate Samba
 - Interactive graph-sheet like canvas for designing.
 - Customizable templates for Saree, Stall, Border, and Motif.
 - Adjustable border types, color palettes, and zones.
+- Advanced drawing tools including symmetry and pattern fills.
 - Export functionality for finished designs.
 
 ## Tech Stack

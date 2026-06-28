@@ -1,6 +1,6 @@
 # Sambalpuri Design Studio
 
-A web-based design studio application for creating beautiful and intricate Sambalpuri saree, stall, border, and motif patterns.
+A **web-based design studio application** for creating beautiful and intricate Sambalpuri saree, stall, border, and motif patterns.
 
 ## Features
 - Interactive graph-sheet like canvas for designing.

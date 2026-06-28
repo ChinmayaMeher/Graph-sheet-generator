@@ -68,6 +68,10 @@ let placedImages = []; // [{img, canvasX, canvasY, canvasW, canvasH, opacity}]
 
 let layers = [{ name: "Layer 1", visible: true, boxes: new Map() }];
 let activeLayerIndex = 0;
+/**
+ * Returns the currently active layer.
+ * @returns {Object} The active layer object containing its name, visibility, and boxes.
+ */
 function activeLayer() {
   return layers[activeLayerIndex];
 }

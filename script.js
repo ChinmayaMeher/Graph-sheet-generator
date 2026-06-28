@@ -80,6 +80,10 @@ function activeLayer() {
 let undoStack = [],
   redoStack = [];
 const MAX_UNDO = 40;
+/**
+ * Saves the current state of layers to the undo stack.
+ * Ensures the undo stack does not exceed the maximum allowed size.
+ */
 function saveState() {
   const snap = layers.map((l) => ({
     name: l.name,

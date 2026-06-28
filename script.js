@@ -94,6 +94,9 @@ function saveState() {
   if (undoStack.length > MAX_UNDO) undoStack.shift();
   redoStack = [];
 }
+/**
+ * Reverts the layers state to the previous state in the undo stack.
+ */
 function undo() {
   if (!undoStack.length) return;
   const cur = layers.map((l) => ({

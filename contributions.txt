@@ -27,3 +27,4 @@ Commit 5 on 2026-07-03
 Commit 6 on 2026-07-03
 Commit 7 on 2026-07-03
 Commit 1 on 2026-07-06 : Update project documentation structure
+Commit 2 on 2026-07-06 : Refactor initial canvas setup

@@ -43,3 +43,4 @@ Commit 5 on 2026-07-07 : Optimize event listeners on canvas
 Commit 6 on 2026-07-07 : Update Sambalpuri pattern presets
 Commit 7 on 2026-07-07 : Adjust grid line visibility toggle
 Commit 8 on 2026-07-07 : Add support for custom brush sizes
+Commit 9 on 2026-07-07 : Enhance error handling during export

@@ -41,3 +41,4 @@ Commit 3 on 2026-07-07 : Update motif template rendering
 Commit 4 on 2026-07-07 : Fix bug in zone coloring
 Commit 5 on 2026-07-07 : Optimize event listeners on canvas
 Commit 6 on 2026-07-07 : Update Sambalpuri pattern presets
+Commit 7 on 2026-07-07 : Adjust grid line visibility toggle

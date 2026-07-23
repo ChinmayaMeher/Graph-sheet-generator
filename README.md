@@ -7,7 +7,7 @@ A **web-based design studio application** for creating beautiful and intricate S
 - Customizable templates for Saree, Stall, Border, and Motif.
 - Adjustable border types, color palettes, and zones.
 - Advanced drawing tools including symmetry and pattern fills.
-- Export functionality for finished designs.
+- Export functionality for finished designs (PNG/JPEG).
 
 ## Tech Stack
 - HTML5

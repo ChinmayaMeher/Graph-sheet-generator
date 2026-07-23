@@ -30,3 +30,5 @@ Special thanks to the traditional weaving community.
 
 ## Support
 
+If you have any issues, please open an issue on GitHub.
+

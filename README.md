@@ -27,3 +27,6 @@ This project is open source and available under the [MIT License](LICENSE).
 
 Special thanks to the traditional weaving community.
 
+
+## Support
+

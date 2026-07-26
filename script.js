@@ -3083,3 +3083,17 @@ if (document.readyState === "loading") {
 } else {
   initBorderDesignPanel();
 }
+
+// ── SKELETON LOADER ───────────────────────────────────────────────────
+window.addEventListener("load", () => {
+  const loader = document.getElementById("skeletonLoader");
+  if (loader) {
+    setTimeout(() => {
+      loader.classList.add("skeleton-hidden");
+      setTimeout(() => {
+        loader.style.display = 'none';
+      }, 500); // Wait for transition
+    }, 2000);
+  }
+});
+

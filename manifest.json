@@ -1,0 +1,16 @@
+{
+  "name": "Sambalpuri Design Studio",
+  "short_name": "Sambalpuri",
+  "description": "Create beautiful Sambalpuri saree and fabric patterns online.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "assets/saree_icon.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -11,17 +11,17 @@
   /* Layout */
   --sidebar-w: 320px;
   --toolbar-h: 56px;
-  
+
   /* Colors */
   --bg-color: #0f172a;
   --bg-image: radial-gradient(
       circle at 0% 0%,
-      rgba(37, 99, 235, 0.10) 0%,
+      rgba(37, 99, 235, 0.1) 0%,
       transparent 50%
     ),
     radial-gradient(
       circle at 100% 100%,
-      rgba(14, 165, 233, 0.10) 0%,
+      rgba(14, 165, 233, 0.1) 0%,
       transparent 50%
     );
   --surface: rgba(30, 41, 59, 0.55);
@@ -83,7 +83,7 @@ body {
 }
 
 .sidebar-header {
-  padding: 20px;
+  padding: 10px;
   border-bottom: 1px solid var(--border);
   background: linear-gradient(
     180deg,
@@ -273,14 +273,16 @@ body {
   font-size: 12px;
   font-weight: 500;
   color: var(--text2);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 .tmpl-card:hover {
   border-color: var(--accent);
   color: var(--text);
   transform: translateY(-3px) scale(1.02);
   background: rgba(255, 255, 255, 0.06);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 16px rgba(59, 130, 246, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 16px rgba(59, 130, 246, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 .tmpl-card.active {
   border-color: var(--accent);
@@ -685,7 +687,7 @@ body {
   display: flex;
   align-items: flex-start;
   justify-content: flex-start;
-  padding: 40px; /* Workspace feel */
+  padding: 10px; /* Workspace feel */
   position: relative;
   cursor: crosshair;
 }
@@ -795,7 +797,7 @@ body {
 @media (max-width: 1279px) {
   :root {
     --sidebar-w: 270px;
-    --toolbar-h: 48px;
+    --toolbar-h: 63px;
   }
 
   .brand h1 {
@@ -1516,13 +1518,15 @@ body {
   -webkit-backdrop-filter: blur(16px);
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 .border-type-card:hover {
   border-color: var(--accent);
   transform: translateY(-3px) scale(1.02);
   background: rgba(255, 255, 255, 0.06);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 16px rgba(59, 130, 246, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 16px rgba(59, 130, 246, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 .border-type-card.active {
   border-color: var(--accent);
@@ -1616,13 +1620,15 @@ body {
   padding: 8px 6px 6px;
   text-align: center;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 .border-design-card:hover {
   border-color: var(--accent);
   transform: translateY(-3px) scale(1.02);
   background: rgba(255, 255, 255, 0.06);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 16px rgba(59, 130, 246, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 16px rgba(59, 130, 246, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 .border-design-card.active {
   border-color: var(--accent);
@@ -1713,13 +1719,18 @@ body {
 }
 
 @keyframes pulse {
-  0% { opacity: 0.5; }
-  50% { opacity: 1; }
-  100% { opacity: 0.5; }
+  0% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.5;
+  }
 }
 
 .skeleton-hidden {
   opacity: 0;
   pointer-events: none;
 }
-

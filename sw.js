@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sambalpuri-studio-v2';
+const CACHE_NAME = 'sambalpuri-studio-v3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
